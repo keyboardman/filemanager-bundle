@@ -1,0 +1,6 @@
+{
+  "build/manager.css": "/bundles/keyboardmanfilemanager/build/manager.css",
+  "build/manager.js": "/bundles/keyboardmanfilemanager/build/manager.js",
+  "build/picker.css": "/bundles/keyboardmanfilemanager/build/picker.css",
+  "build/picker.js": "/bundles/keyboardmanfilemanager/build/picker.js"
+}

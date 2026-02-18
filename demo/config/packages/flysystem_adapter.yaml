@@ -1,0 +1,5 @@
+services:
+    app.flysystem_adapter.local:
+        class: League\Flysystem\Local\LocalFilesystemAdapter
+        arguments:
+            - '%kernel.project_dir%/var/storage'

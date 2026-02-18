@@ -1,0 +1,12 @@
+# Services applicatifs (l'adaptateur Flysystem est dans config/packages/flysystem_adapter.yaml)
+services:
+    App\Controller\HomeController:
+        arguments:
+            $twig: '@twig'
+        tags: ['controller.service_arguments']
+
+    App\Controller\DemoPickerController:
+        arguments:
+            $formFactory: '@form.factory'
+            $twig: '@twig'
+        tags: ['controller.service_arguments']

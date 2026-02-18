@@ -1,0 +1,60 @@
+.filemanager-picker-widget {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.filemanager-picker-widget input {
+    flex: 1;
+    min-width: 0;
+}
+
+.filemanager-picker-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.filemanager-picker-dialog {
+    position: relative;
+    background: #fff;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 900px;
+    height: 80vh;
+    max-height: 600px;
+}
+
+.filemanager-picker-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: #eee;
+    border-radius: 0.25rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.filemanager-picker-close:hover {
+    background: #ddd;
+}
+
+.filemanager-picker-iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0 0 0.25rem 0.25rem;
+}

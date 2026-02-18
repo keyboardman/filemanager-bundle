@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démo Filemanager Picker</title>
+    <link rel="stylesheet" href="{{ asset('bundles/keyboardmanfilemanager/build/picker.css') }}">
+</head>
+<body>
+    <h1>Démo : formulaire avec 2 champs picker</h1>
+    <p>Cliquez sur « Parcourir » pour ouvrir le file manager et sélectionner un fichier. Vous pouvez utiliser les deux champs indépendamment.</p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.file1) }}
+        {{ form_row(form.file2) }}
+        <button type="submit">Envoyer</button>
+    {{ form_end(form) }}
+
+    {% if submitted %}
+        <p>Valeurs reçues : file1 = {{ submitted.file1 }}, file2 = {{ submitted.file2 }}</p>
+    {% endif %}
+
+    <p><a href="{{ path('keyboardman_filemanager') }}">Ouvrir le file manager en pleine page</a></p>
+
+    <script src="{{ asset('bundles/keyboardmanfilemanager/build/picker.js') }}"></script>
+</body>
+</html>

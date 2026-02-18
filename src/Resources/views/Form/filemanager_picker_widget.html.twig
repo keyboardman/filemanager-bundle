@@ -1,0 +1,8 @@
+{% use "form_div_layout.html.twig" %}
+{% block filemanager_picker_widget %}
+{% set channel = form.vars.id %}
+<div class="filemanager-picker-widget" data-filemanager-picker data-channel="{{ channel|e('html_attr') }}" data-picker-url="{{ picker_url|e('html_attr') }}">
+    {{ block('form_widget_simple') }}
+    <button type="button" class="filemanager-picker-btn">{{ button_label }}</button>
+</div>
+{% endblock %}

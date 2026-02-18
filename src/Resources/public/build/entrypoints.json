@@ -1,0 +1,20 @@
+{
+  "entrypoints": {
+    "manager": {
+      "css": [
+        "/bundles/keyboardmanfilemanager/build/manager.css"
+      ],
+      "js": [
+        "/bundles/keyboardmanfilemanager/build/manager.js"
+      ]
+    },
+    "picker": {
+      "css": [
+        "/bundles/keyboardmanfilemanager/build/picker.css"
+      ],
+      "js": [
+        "/bundles/keyboardmanfilemanager/build/picker.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+services:
+    Keyboardman\FilemanagerBundle\Controller\FilemanagerController:
+        arguments:
+            $twig: '@twig'
+        tags: ['controller.service_arguments']

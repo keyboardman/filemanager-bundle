@@ -1,0 +1,24 @@
+# Tests : lancer les tests PHPUnit du bundle
+#   docker compose run --rm test
+#
+# Démo : lancer l'interface file manager (port 8000)
+#   docker compose up demo
+#   Puis ouvrir http://localhost:8000/filemanager
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["./vendor/bin/phpunit"]
+
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    ports:
+      - "8000:8000"
+    volumes:
+      # Monter le stockage pour voir les fichiers uploadés dans demo/var/storage sur l'hôte
+      - ./demo/var/storage:/app/demo/var/storage
+    command: ["php", "-S", "0.0.0.0:8000", "-t", "public"]

@@ -1,0 +1,4 @@
+keyboardman_filemanager:
+    path: /filemanager
+    controller: Keyboardman\FilemanagerBundle\Controller\FilemanagerController
+    methods: [GET]

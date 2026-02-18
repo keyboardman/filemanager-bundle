@@ -1,0 +1,63 @@
+# Étape 1 : build des assets (CSS/JS) du filemanager-bundle
+FROM node:20-alpine AS frontend
+WORKDIR /app
+
+# Copier les scripts
+COPY scripts/ /app/scripts/
+
+COPY package.json package-lock.json ./
+RUN /app/scripts/npm-install.sh
+
+COPY . .
+RUN /app/scripts/npm-build.sh
+
+# Étape 2 : image PHP pour la démo
+FROM php:8.2-cli
+
+# Installer les dépendances système et extensions PHP
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git unzip curl g++ libzip-dev libicu-dev libxml2-dev libonig-dev \
+    make autoconf pkg-config \
+    && docker-php-ext-install -j$(nproc) zip intl xml mbstring pdo \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Installer Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Configurer Composer pour HTTPS
+RUN composer config --global github-protocols https
+RUN rm -rf /root/.composer/cache/vcs
+
+WORKDIR /app
+
+# Copier les scripts
+COPY scripts/ /app/scripts/
+
+# Copier le dépôt complet (bundle + demo)
+COPY . /app/
+
+# Récupérer les assets buildés (manager.js, manager.css)
+COPY --from=frontend /app/src/Resources/public/build /app/src/Resources/public/build
+
+# Installer les dépendances du bundle principal
+RUN /app/scripts/composer-install.sh
+
+# Cloner filesystem-bundle en HTTPS (évite git@github.com dans composer install)
+RUN git clone --depth 1 https://github.com/keyboardman/filesystem-bundle.git /app/filesystem-bundle
+
+# Démo : utiliser les deux bundles en path (pas de clone Git par Composer)
+WORKDIR /app/demo
+COPY demo/composer.docker.json /app/demo/composer.json
+RUN composer config allow-plugins.symfony/runtime true && \
+    /app/scripts/composer-install.sh /app/demo && \
+    /app/scripts/composer-dump-autoload.sh /app/demo
+
+# Créer le dossier de stockage et donner les droits
+RUN mkdir -p var/storage && chmod -R 777 var
+
+# Exposer les assets du filemanager-bundle (équivalent à assets:install, la démo n'a pas bin/console)
+RUN mkdir -p public/bundles/keyboardmanfilemanager && cp -r /app/src/Resources/public/* public/bundles/keyboardmanfilemanager/
+
+EXPOSE 8000
+
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]

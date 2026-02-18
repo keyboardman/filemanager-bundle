@@ -1,0 +1,4 @@
+keyboardman_filesystem:
+    filesystems:
+        default:
+            adapter: app.flysystem_adapter.local

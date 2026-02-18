@@ -1,0 +1,18 @@
+{
+  "name": "keyboardman/filemanager-bundle",
+  "private": true,
+  "scripts": {
+    "build": "encore production",
+    "dev": "encore dev",
+    "watch": "encore dev --watch"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.23.0",
+    "@symfony/webpack-encore": "^4.0"
+  }
+}
