@@ -1,0 +1,22 @@
+home:
+    path: /
+    controller: App\Controller\HomeController
+    methods: [GET]
+
+keyboardman_filesystem_api:
+    resource: '@KeyboardmanFilesystemBundle/Resources/config/routes.yaml'
+
+keyboardman_filemanager:
+    resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
+
+demo_picker:
+    path: /demo-picker
+    controller: App\Controller\DemoPickerController
+    methods: [GET, POST]
+
+demo_serve_file:
+    path: /demo/serve/{filesystem}/{path}
+    controller: App\Controller\DemoServeFileController
+    methods: [GET]
+    requirements:
+        path: .+

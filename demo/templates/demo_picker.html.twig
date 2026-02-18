@@ -8,16 +8,20 @@
 </head>
 <body>
     <h1>Démo : formulaire avec 2 champs picker</h1>
-    <p>Cliquez sur « Parcourir » pour ouvrir le file manager et sélectionner un fichier. Vous pouvez utiliser les deux champs indépendamment.</p>
+    <p>Cliquez sur « Parcourir » pour ouvrir le file manager et sélectionner un fichier. Deux cas sont illustrés : <strong>path</strong> (valeur <code>filesystem:path</code>) et <strong>URL absolue</strong>.</p>
 
     {{ form_start(form) }}
-        {{ form_row(form.file1) }}
-        {{ form_row(form.file2) }}
+        {{ form_row(form.filePath) }}
+        {{ form_row(form.fileUrl) }}
         <button type="submit">Envoyer</button>
     {{ form_end(form) }}
 
     {% if submitted %}
-        <p>Valeurs reçues : file1 = {{ submitted.file1 }}, file2 = {{ submitted.file2 }}</p>
+        <section>
+            <h2>Valeurs soumises</h2>
+            <p><strong>Path (filesystem:path) :</strong> <code>{{ submitted.filePath }}</code></p>
+            <p><strong>URL absolue :</strong> <code>{{ submitted.fileUrl }}</code></p>
+        </section>
     {% endif %}
 
     <p><a href="{{ path('keyboardman_filemanager') }}">Ouvrir le file manager en pleine page</a></p>

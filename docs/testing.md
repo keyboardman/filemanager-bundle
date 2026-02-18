@@ -1,5 +1,7 @@
 # Tests
 
+← [Retour à la documentation](../README.md#documentation)
+
 ## Lancer les tests
 
 À la racine du dépôt (après `composer install`) :

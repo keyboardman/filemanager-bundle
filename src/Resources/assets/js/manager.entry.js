@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialFilterSearch = layout.getAttribute('data-initial-filter-search') || '';
   const initialSort = layout.getAttribute('data-initial-sort') || 'asc';
   const initialFilesystem = layout.getAttribute('data-initial-filesystem') || 'default';
+  const availableFilesystemsRaw = layout.getAttribute('data-available-filesystems');
+  const availableFilesystems = availableFilesystemsRaw ? JSON.parse(availableFilesystemsRaw) : ['default', 's3'];
   const pickerMode = layout.getAttribute('data-picker') === '1';
   const channel = layout.getAttribute('data-channel') || '';
 
@@ -29,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initialFilterSearch={initialFilterSearch}
       initialSort={initialSort}
       initialFilesystem={initialFilesystem}
+      availableFilesystems={availableFilesystems}
       pickerMode={pickerMode}
       channel={channel}
     />

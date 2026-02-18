@@ -42,6 +42,7 @@
   color: var(--fm-fg);
   background: var(--fm-bg);
   min-height: 100vh;
+  overflow: hidden;
 }
 
 /* Buttons — shadcn button variants */
@@ -152,6 +153,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
 }
 
 .fm-header {
@@ -187,6 +189,7 @@
 .fm-body {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -232,7 +235,9 @@
 
 .fm-main {
   flex: 1;
-  overflow: auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 1rem;
   background: var(--background);
 }

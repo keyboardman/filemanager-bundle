@@ -54,6 +54,11 @@ function getFileIcon(filename) {
   return ext && EXT_TO_ICON[ext] ? EXT_TO_ICON[ext] : '📄';
 }
 
+const FILESYSTEM_LABELS = { default: 'Local', s3: 'S3 / MinIO' };
+function getFilesystemLabel(name) {
+  return FILESYSTEM_LABELS[name] ?? name;
+}
+
 export default function FileManager(props) {
   const {
     apiBase = '/api/filesystem',
@@ -62,15 +67,17 @@ export default function FileManager(props) {
     initialFilterSearch = '',
     initialSort = 'asc',
     initialFilesystem = 'default',
+    availableFilesystems = ['default', 's3'],
     pickerMode = false,
     channel = '',
   } = props;
 
+  const validInitialFs = availableFilesystems.includes(initialFilesystem) ? initialFilesystem : (availableFilesystems[0] ?? 'default');
   const [currentPath, setCurrentPath] = useState(initialPath);
   const [filterType, setFilterType] = useState(initialFilterType);
   const [filterSearch, setFilterSearch] = useState(initialFilterSearch);
   const [sort, setSort] = useState(initialSort);
-  const [filesystem, setFilesystem] = useState(initialFilesystem);
+  const [filesystem, setFilesystem] = useState(validInitialFs);
   const [allPaths, setAllPaths] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -142,11 +149,11 @@ export default function FileManager(props) {
     (path) => {
       if (!pickerMode || !channel || typeof window.parent.postMessage !== 'function') return;
       window.parent.postMessage(
-        { type: 'keyboardman.filemanager.picked', channel, path },
+        { type: 'keyboardman.filemanager.picked', channel, path, filesystem },
         window.location.origin
       );
     },
-    [pickerMode, channel]
+    [pickerMode, channel, filesystem]
   );
 
   const handleNavigate = (path) => setCurrentPath(path);
@@ -314,8 +321,11 @@ export default function FileManager(props) {
             onChange={handleFilesystemChange}
             style={{ width: 'auto' }}
           >
-            <option value="default">Local</option>
-            <option value="s3">S3 / MinIO</option>
+            {availableFilesystems.map((fs) => (
+              <option key={fs} value={fs}>
+                {getFilesystemLabel(fs)}
+              </option>
+            ))}
           </select>
           <label className="fm-dialog-label" style={{ marginBottom: 0, marginRight: '0.25rem', marginLeft: '0.75rem' }}>
             Filtre
@@ -376,39 +386,17 @@ export default function FileManager(props) {
 
       <div className="fm-body">
         <aside className="fm-sidebar">
-          {loading && !allPaths.length ? (
-            <div className="fm-loading">Chargement…</div>
-          ) : error ? (
-            <div className="fm-empty">Erreur</div>
-          ) : (
-            <>
-              {currentPath && (
-                <button
-                  type="button"
-                  className="fm-sidebar-item parent"
-                  onClick={() => handleNavigate(parentPath)}
-                  title="Remonter au dossier parent"
-                >
-                  <span className="fm-sidebar-icon" aria-hidden>↑</span>
-                  Dossier parent
-                </button>
-              )}
-              {dirs.map((d) => {
-                const nextPath = currentPath ? currentPath + '/' + d : d;
-                return (
-                  <button
-                    key={nextPath}
-                    type="button"
-                    className="fm-sidebar-item"
-                    onClick={() => handleNavigate(nextPath)}
-                  >
-                    📁 {d}
-                  </button>
-                );
-              })}
-              {!currentPath && dirs.length === 0 && <div className="fm-empty">(vide)</div>}
-            </>
-          )}
+          {currentPath ? (
+            <button
+              type="button"
+              className="fm-sidebar-item parent"
+              onClick={() => handleNavigate(parentPath)}
+              title="Remonter au dossier parent"
+            >
+              <span className="fm-sidebar-icon" aria-hidden>↑</span>
+              Dossier parent
+            </button>
+          ) : null}
         </aside>
 
         <main className="fm-main">

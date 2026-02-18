@@ -1,5 +1,7 @@
 # Assets (CSS, JavaScript)
 
+← [Retour à la documentation](../README.md#documentation)
+
 Les assets du File Manager sont séparés en **CSS**, **JavaScript** et **Twig**, et sont construits avec **Webpack Encore**.
 
 ## Structure

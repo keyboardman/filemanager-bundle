@@ -13,6 +13,10 @@ final class KeyboardmanFilemanagerExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $config = $this->processConfiguration(new Configuration(), $configs);
+        $container->setParameter('keyboardman_filemanager.url_route', $config['url_route'] ?? null);
+        $container->setParameter('keyboardman_filemanager.available_filesystems', $config['available_filesystems'] ?? ['default', 's3']);
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
     }

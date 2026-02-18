@@ -92,12 +92,12 @@ Docker sert uniquement à lancer **MinIO** pour tester le stockage S3 en local :
 
 ## Documentation
 
-- [Installation](docs/installation.md)
+- [Installation et configuration](docs/installation.md) — prérequis, installation, routes, assets, configuration du bundle
+- [Widget formulaire (picker) et extension Twig](docs/form-picker.md) — FormType, options, `value_type`, fonction Twig `filemanager_url()`, service `FilemanagerUrlResolver`
+- [Utilisation de l’interface](docs/usage.md) — file manager (header, sidebar, actions)
 - [Assets (CSS, JS, build Webpack)](docs/assets.md)
-- [Utilisation](docs/usage.md)
-- [Widget formulaire (picker)](docs/form-picker.md)
 - [Tests](docs/testing.md)
-- [Docker](docs/docker.md)
+- [Docker (MinIO)](docs/docker.md)
 
 ## Licence
 

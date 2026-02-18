@@ -14,6 +14,7 @@
          data-initial-filter-search="{{ initial_filter_search|e('html_attr') }}"
          data-initial-sort="{{ initial_sort|e('html_attr') }}"
          data-initial-filesystem="{{ initial_filesystem|e('html_attr') }}"
+         data-available-filesystems="{{ available_filesystems|json_encode|e('html_attr') }}"
          data-picker="{{ picker ? '1' : '0' }}"
          data-channel="{{ channel|e('html_attr') }}">
     </div>

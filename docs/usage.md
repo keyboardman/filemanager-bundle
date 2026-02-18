@@ -1,5 +1,7 @@
 # Utilisation de l’interface File Manager
 
+← [Retour à la documentation](../README.md#documentation)
+
 ## Accès
 
 Ouvrez dans le navigateur : **/filemanager** (ou l’URL de base de votre application + `/filemanager`).

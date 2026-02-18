@@ -19,7 +19,7 @@ fi
 
 mkdir -p "${BUNDLES}"
 if [ -e "${BUNDLES}/${TARGET}" ]; then
-  rm -f "${BUNDLES}/${TARGET}"
+  rm -rf "${BUNDLES}/${TARGET}"
 fi
 ln -sf "${LINK_TARGET}" "${BUNDLES}/${TARGET}"
 echo "✅ Symlink créé: demo/public/bundles/${TARGET} -> ${LINK_TARGET}"

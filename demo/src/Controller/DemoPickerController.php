@@ -21,8 +21,16 @@ final class DemoPickerController
     public function __invoke(Request $request): Response
     {
         $form = $this->formFactory->createBuilder()
-            ->add('file1', FilemanagerPickerType::class, ['label' => 'Fichier 1'])
-            ->add('file2', FilemanagerPickerType::class, ['label' => 'Fichier 2'])
+            ->add('filePath', FilemanagerPickerType::class, [
+                'label' => 'Fichier (path)',
+                'help' => 'Stocke la valeur au format filesystem:path (ex. default:uploads/photo.jpg)',
+                'value_type' => 'path',
+            ])
+            ->add('fileUrl', FilemanagerPickerType::class, [
+                'label' => 'Fichier (URL absolue)',
+                'help' => "Stocke l'URL absolue du fichier sélectionné",
+                'value_type' => 'url',
+            ])
             ->getForm();
 
         $form->handleRequest($request);

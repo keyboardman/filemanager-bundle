@@ -2,3 +2,8 @@ keyboardman_filemanager:
     path: /filemanager
     controller: Keyboardman\FilemanagerBundle\Controller\FilemanagerController
     methods: [GET]
+
+keyboardman_filemanager_resolve_url:
+    path: /filemanager/resolve-url
+    controller: Keyboardman\FilemanagerBundle\Controller\ResolveUrlController
+    methods: [GET]

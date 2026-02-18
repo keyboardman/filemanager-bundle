@@ -2,3 +2,5 @@ keyboardman_filesystem:
     filesystems:
         default:
             adapter: app.flysystem_adapter.local
+        s3:
+            adapter: app.flysystem_adapter.s3

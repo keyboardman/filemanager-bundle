@@ -1,16 +1,18 @@
-# Installation
+# Installation et configuration
+
+← [Retour à la documentation](../README.md#documentation)
 
 ## Prérequis
 
-- **PHP** 8.1 ou supérieur
-- **Symfony** 6.4 ou 7.x (framework-bundle, twig-bundle)
-- **keyboardman/filesystem-bundle** installé et configuré dans l’application, avec au minimum :
+- **PHP** 8.1 ou supérieur  
+- **Symfony** 6.4 ou 7.x (`framework-bundle`, `twig-bundle`, `form`)  
+- **[keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle)** installé et configuré, avec au minimum :
   - **GET** `/api/filesystem/list` (paramètres : `filesystem`, optionnel `type`, optionnel `sort`)
-  - **POST** `/api/filesystem/upload`, `/api/filesystem/upload-multiple`, `/api/filesystem/rename`, `/api/filesystem/move`, `/api/filesystem/delete`, `/api/filesystem/create-directory` (paramètres : `filesystem`, `path` — chemin complet du nouveau dossier)
+  - **POST** `/api/filesystem/upload`, `upload-multiple`, `rename`, `move`, `delete`, `create-directory`
 
-## Étapes
+---
 
-### 1. Installation Composer
+## 1. Installation Composer
 
 Si le bundle n’est pas sur Packagist, ajoutez le dépôt dans `composer.json` :
 
@@ -31,7 +33,9 @@ Puis :
 composer require keyboardman/filemanager-bundle
 ```
 
-### 2. Enregistrement du bundle
+---
+
+## 2. Enregistrement du bundle
 
 Dans `config/bundles.php` :
 
@@ -42,7 +46,9 @@ return [
 ];
 ```
 
-### 3. Chargement des routes
+---
+
+## 3. Routes
 
 Dans `config/routes.yaml` (ou équivalent) :
 
@@ -51,24 +57,61 @@ keyboardman_filemanager:
     resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
 ```
 
-L’interface est alors disponible à l’URL **/filemanager**.
+Le bundle enregistre :
 
-### 4. Installation des assets (CSS, JS)
+- **GET /filemanager** — page du file manager  
+- **GET /filemanager/resolve-url** — résolution `filesystem:path` → URL (pour le form picker en `value_type` = `url`)
 
-Les assets du bundle (CSS, JavaScript) sont livrés dans `Resources/public/`. Pour les exposer dans l’application, exécutez la commande Symfony :
+---
+
+## 4. Assets (CSS, JS)
+
+Les assets sont dans `Resources/public/`. Pour les exposer :
 
 ```bash
 php bin/console assets:install
 ```
 
-Cela copie les fichiers vers `public/bundles/keyboardmanfilemanager/`. En développement, vous pouvez utiliser des symlinks pour éviter de recopier à chaque mise à jour :
+Ils sont copiés dans `public/bundles/keyboardmanfilemanager/`. En développement :
 
 ```bash
 php bin/console assets:install --symlink
 ```
 
-### 5. Sécurité (production)
+---
 
-- Protéger la route `/filemanager` (firewall, authentification).
-- Protéger les routes `/api/filesystem/*` de la même manière.
+## 5. Configuration du bundle
+
+Fichier : `config/packages/keyboardman_filemanager.yaml`
+
+```yaml
+keyboardman_filemanager:
+    # Route utilisée pour générer l’URL d’un fichier (paramètres : filesystem, path).
+    # Requis pour le form picker en value_type = url et pour la fonction Twig filemanager_url().
+    url_route: null   # ex. : app_serve_file
+
+    # Liste des filesystems affichés dans le sélecteur du file manager.
+    # N’indiquer que les filesystems réellement configurés (évite l’erreur « Unknown filesystem »).
+    available_filesystems: ['default', 's3']
+```
+
+| Option | Type | Défaut | Description |
+|--------|------|--------|-------------|
+| `url_route` | `string` ou `null` | `null` | Nom de la route qui sert le fichier (paramètres : `filesystem`, `path`). Si `null`, la résolution d’URL est désactivée. |
+| `available_filesystems` | `list<string>` | `['default', 's3']` | Noms des filesystems proposés dans le file manager (dropdown « Stockage »). |
+
+**Exemple** avec une route applicative qui sert les fichiers :
+
+```yaml
+keyboardman_filemanager:
+    url_route: app_serve_file
+    available_filesystems: ['default']
+```
+
+---
+
+## 6. Sécurité (production)
+
+- Protéger la route **/filemanager** (firewall, authentification).
+- Protéger **/filemanager/resolve-url** et les routes **/api/filesystem/***.
 - Ne pas exposer l’interface en public sans contrôle d’accès.

@@ -22,6 +22,7 @@ final class FilemanagerControllerTest extends TestCase
         self::assertStringContainsString('File Manager', $response->getContent());
         self::assertStringContainsString('data-api-base', $response->getContent());
         self::assertStringContainsString('data-initial-filesystem', $response->getContent());
+        self::assertStringContainsString('data-available-filesystems', $response->getContent());
         self::assertStringContainsString('manager.js', $response->getContent());
     }
 }

@@ -1,5 +1,7 @@
 # Docker (MinIO uniquement)
 
+← [Retour à la documentation](../README.md#documentation)
+
 Docker est utilisé **uniquement pour MinIO** afin de tester le stockage S3 en local. Les tests et la démo s'exécutent sur la machine hôte.
 
 ## Tests (sans Docker)
@@ -31,7 +33,7 @@ Pour tester le file manager avec un stockage S3-compatible (sans AWS) :
    # ou : docker compose up minio
    ```
 
-2. **Configurer la démo** : dans `demo/.env`, décommenter et adapter les variables MinIO (pointant vers `http://localhost:9000` quand MinIO tourne en Docker) :
+2. **Configurer la démo** : dans `demo/.env` ou `demo/.env.local`, décommenter et adapter les variables MinIO (pointant vers `http://localhost:9000` quand MinIO tourne en Docker) :
    ```env
    MINIO_ENDPOINT=http://localhost:9000
    MINIO_ACCESS_KEY=minioadmin
@@ -51,6 +53,8 @@ Pour tester le file manager avec un stockage S3-compatible (sans AWS) :
 | `MINIO_SECRET_KEY`  | Secret                         |
 | `MINIO_BUCKET`      | Nom du bucket                  |
 | `MINIO_REGION`      | Région (ex. `us-east-1`)       |
+
+**En cas d’erreur** « Failed to connect to localhost port 9000 » / « HeadBucket » : soit MinIO n’est pas démarré (lancez `make minio` dans un autre terminal), soit laissez les variables MinIO commentées pour n’utiliser que le stockage local.
 
 ## Fichiers
 

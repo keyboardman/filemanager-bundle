@@ -1,0 +1,3 @@
+keyboardman_filemanager:
+    url_route: demo_serve_file
+    available_filesystems: ['default','s3']

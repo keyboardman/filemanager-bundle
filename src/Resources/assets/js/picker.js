@@ -47,6 +47,12 @@
         if (iframe) iframe.src = 'about:blank';
     }
 
+    function setInputValue(input, value) {
+        if (!input) return;
+        input.value = value || '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
     function onMessage(event) {
         if (event.origin !== window.location.origin) return;
         const data = event.data;
@@ -55,11 +61,33 @@
         for (let i = 0; i < widgets.length; i++) {
             if (widgets[i].getAttribute('data-channel') === data.channel) {
                 const input = widgets[i].querySelector('input');
-                if (input) {
-                    input.value = data.path || '';
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                const valueType = widgets[i].getAttribute('data-value-type') || 'path';
+                const path = data.path || '';
+                const filesystem = data.filesystem != null ? data.filesystem : 'default';
+
+                if (valueType === 'url') {
+                    const resolveUrl = widgets[i].getAttribute('data-resolve-url');
+                    if (resolveUrl) {
+                        const url = resolveUrl + (resolveUrl.indexOf('?') !== -1 ? '&' : '?') +
+                            'filesystem=' + encodeURIComponent(filesystem) + '&path=' + encodeURIComponent(path);
+                        fetch(url)
+                            .then(function (r) { return r.json(); })
+                            .then(function (json) {
+                                setInputValue(input, json.url || '');
+                                closeModal();
+                            })
+                            .catch(function () {
+                                setInputValue(input, filesystem + ':' + path);
+                                closeModal();
+                            });
+                    } else {
+                        setInputValue(input, filesystem + ':' + path);
+                        closeModal();
+                    }
+                } else {
+                    setInputValue(input, filesystem + ':' + path);
+                    closeModal();
                 }
-                closeModal();
                 break;
             }
         }
