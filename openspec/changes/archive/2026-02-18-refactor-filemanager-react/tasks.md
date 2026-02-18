@@ -27,10 +27,10 @@
 ## 5. Mode picker et postMessage
 
 - [x] 5.1 Conserver l'émission de postMessage (keyboardman.filemanager.picked) lors de la sélection en mode picker
-- [ ] 5.2 Tester l'intégration avec le form picker (modal iframe)
+- [x] 5.2 Tester l'intégration avec le form picker (modal iframe)
 
 ## 6. Tests et validation
 
-- [ ] 6.1 Tester la navigation, filtres, tri, upload, rename, delete, nouveau dossier
-- [ ] 6.2 Tester le mode picker et la réception du path dans le form
-- [ ] 6.3 Vérifier la compatibilité avec les navigateurs cibles
+- [x] 6.1 Tester la navigation, filtres, tri, upload, rename, delete, nouveau dossier
+- [x] 6.2 Tester le mode picker et la réception du path dans le form
+- [x] 6.3 Vérifier la compatibilité avec les navigateurs cibles
