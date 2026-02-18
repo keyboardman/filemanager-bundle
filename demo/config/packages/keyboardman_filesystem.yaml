@@ -1,4 +1,6 @@
 keyboardman_filesystem:
+    api:
+        max_upload_size: 100M
     filesystems:
         default:
             adapter: app.flysystem_adapter.local

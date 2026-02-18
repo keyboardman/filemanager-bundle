@@ -35,15 +35,15 @@ final class DemoServeFileController
             return new Response('Unknown filesystem', 404);
         }
 
-        if (!$this->fileStorage->pathExists($filesystem, $path)) {
+        if (!$this->fileStorage->has($filesystem, $path)) {
             return new Response('Not found', 404);
         }
 
-        if ($this->fileStorage->isDirectory($filesystem, $path)) {
-            return new Response('Cannot serve directory', 400);
+        try {
+            $content = $this->fileStorage->read($filesystem, $path);
+        } catch (\Throwable) {
+            return new Response('Cannot serve (e.g. directory)', 400);
         }
-
-        $content = $this->fileStorage->read($filesystem, $path);
         $ext = strtolower(pathinfo($path, \PATHINFO_EXTENSION));
         $mimeType = self::MIME_TYPES[$ext] ?? 'application/octet-stream';
         $filename = basename($path);

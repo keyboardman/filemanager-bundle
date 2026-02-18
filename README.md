@@ -46,7 +46,7 @@ L’interface sera accessible à l’URL **/filemanager**.
 - **Sidebar** : répertoires dérivés des `paths` retournés par l’API ; entrée « .. » pour remonter au parent (masquée à la racine).
 - **Zone principale** : liste des dossiers et fichiers du répertoire courant ; actions Renommer, Déplacer, Supprimer (POST vers l’API filesystem) ; barre d’upload (POST upload / upload-multiple).
 
-L’API est appelée en relatif depuis la même origine (base par défaut : `/api/filesystem`). En production, protégez la route `/filemanager` et les routes `/api/filesystem/*` (firewall, authentification).
+L’API est appelée en relatif depuis la même origine (base par défaut : `/api/filesystem`). En production, protégez la route `/filemanager` et les routes `/api/filesystem/*`. Voir [Sécurisation de l’API](docs/security.md) (token ou authentification utilisateur).
 
 ### Widget formulaire (picker)
 
@@ -93,6 +93,8 @@ Docker sert uniquement à lancer **MinIO** pour tester le stockage S3 en local :
 ## Documentation
 
 - [Installation et configuration](docs/installation.md) — prérequis, installation, routes, assets, configuration du bundle
+- [Sécurisation de l’API](docs/security.md) — token ou authentification utilisateur (firewall Symfony)
+- [URL S3 publique sans expiration](docs/s3-public-url.md) — exposer des fichiers S3 via une URL publique
 - [Widget formulaire (picker) et extension Twig](docs/form-picker.md) — FormType, options, `value_type`, fonction Twig `filemanager_url()`, service `FilemanagerUrlResolver`
 - [Utilisation de l’interface](docs/usage.md) — file manager (header, sidebar, actions)
 - [Assets (CSS, JS, build Webpack)](docs/assets.md)

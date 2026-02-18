@@ -9,6 +9,12 @@ keyboardman_filesystem_api:
 keyboardman_filemanager:
     resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
 
+# Override : S3 = URL présignée, default = demo_serve_file
+keyboardman_filemanager_resolve_url:
+    path: /filemanager/resolve-url
+    controller: App\Controller\DemoResolveUrlController
+    methods: [GET]
+
 demo_picker:
     path: /demo-picker
     controller: App\Controller\DemoPickerController

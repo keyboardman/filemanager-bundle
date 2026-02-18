@@ -39,6 +39,19 @@ function getParentPath(path) {
   return i === -1 ? '' : path.slice(0, i);
 }
 
+const IMAGE_EXT = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'bmp']);
+const AUDIO_EXT = new Set(['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']);
+const VIDEO_EXT = new Set(['mp4', 'webm', 'avi', 'mov', 'mkv', 'm4v', 'ogv', 'wmv']);
+
+function getMediaType(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  if (!ext) return null;
+  if (IMAGE_EXT.has(ext)) return 'image';
+  if (AUDIO_EXT.has(ext)) return 'audio';
+  if (VIDEO_EXT.has(ext)) return 'video';
+  return null;
+}
+
 const EXT_TO_ICON = {
   jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', ico: '🖼️', bmp: '🖼️',
   mp4: '🎬', webm: '🎬', avi: '🎬', mov: '🎬', mkv: '🎬', m4v: '🎬', ogv: '🎬', wmv: '🎬',
@@ -70,9 +83,14 @@ export default function FileManager(props) {
     availableFilesystems = ['default', 's3'],
     pickerMode = false,
     channel = '',
+    resolveUrl = '',
   } = props;
 
-  const validInitialFs = availableFilesystems.includes(initialFilesystem) ? initialFilesystem : (availableFilesystems[0] ?? 'default');
+  // Fallback pour le preview : utiliser la route par défaut si resolveUrl absent (pleine page ou picker)
+  const effectiveResolveUrl = resolveUrl || (window.location.pathname.replace(/\/?$/, '') + '/resolve-url');
+
+  const uniqueFilesystems = React.useMemo(() => [...new Set(availableFilesystems)], [availableFilesystems]);
+  const validInitialFs = uniqueFilesystems.includes(initialFilesystem) ? initialFilesystem : (uniqueFilesystems[0] ?? 'default');
   const [currentPath, setCurrentPath] = useState(initialPath);
   const [filterType, setFilterType] = useState(initialFilterType);
   const [filterSearch, setFilterSearch] = useState(initialFilterSearch);
@@ -87,6 +105,7 @@ export default function FileManager(props) {
   const [renameTarget, setRenameTarget] = useState(null);
   const [renameNewName, setRenameNewName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [previewState, setPreviewState] = useState({ open: false, mediaType: null, url: null, path: null, error: null });
   const fileInputRef = React.useRef(null);
 
   const api = React.useMemo(() => createFilesystemApi(apiBase, filesystem), [apiBase, filesystem]);
@@ -145,6 +164,25 @@ export default function FileManager(props) {
     return fetchList();
   }, [fetchList, showMessage]);
 
+  const resolveFileUrl = useCallback(
+    async (path) => {
+      if (!effectiveResolveUrl || !path) return null;
+      const url = effectiveResolveUrl.startsWith('http')
+        ? effectiveResolveUrl
+        : window.location.origin + (effectiveResolveUrl.startsWith('/') ? effectiveResolveUrl : '/' + effectiveResolveUrl);
+      const sep = url.includes('?') ? '&' : '?';
+      const full = `${url}${sep}filesystem=${encodeURIComponent(filesystem)}&path=${encodeURIComponent(path)}`;
+      try {
+        const res = await fetch(full);
+        const json = await res.json();
+        return json?.url || null;
+      } catch {
+        return null;
+      }
+    },
+    [effectiveResolveUrl, filesystem]
+  );
+
   const sendPickerSelection = useCallback(
     (path) => {
       if (!pickerMode || !channel || typeof window.parent.postMessage !== 'function') return;
@@ -176,6 +214,29 @@ export default function FileManager(props) {
     e.stopPropagation();
     sendPickerSelection(path);
   };
+
+  const handlePreview = async (e, path) => {
+    e.stopPropagation();
+    const name = path.split('/').pop();
+    const mediaType = getMediaType(name);
+    if (!mediaType || !effectiveResolveUrl) return;
+    setPreviewState({ open: true, mediaType, url: null, path, error: null });
+    const url = await resolveFileUrl(path);
+    setPreviewState((prev) => (prev.open ? { ...prev, url, error: url ? null : 'Impossible de charger la prévisualisation' } : prev));
+  };
+
+  const closePreview = useCallback(() => {
+    setPreviewState({ open: false, mediaType: null, url: null, path: null, error: null });
+  }, []);
+
+  useEffect(() => {
+    if (!previewState.open) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') closePreview();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [previewState.open, closePreview]);
 
   const handleRename = (e, path) => {
     e.stopPropagation();
@@ -321,7 +382,7 @@ export default function FileManager(props) {
             onChange={handleFilesystemChange}
             style={{ width: 'auto' }}
           >
-            {availableFilesystems.map((fs) => (
+            {uniqueFilesystems.map((fs) => (
               <option key={fs} value={fs}>
                 {getFilesystemLabel(fs)}
               </option>
@@ -455,6 +516,16 @@ export default function FileManager(props) {
                       <span className="fm-name">{name}</span>
                       {pickerMode ? (
                         <span className="fm-actions">
+                          {effectiveResolveUrl && getMediaType(name) ? (
+                            <button
+                              type="button"
+                              className="fm-btn fm-btn-ghost fm-btn-sm"
+                              onClick={(e) => handlePreview(e, fullPath)}
+                              title="Prévisualiser"
+                            >
+                              Prévisualiser
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             className="fm-btn fm-btn-primary fm-btn-sm"
@@ -465,6 +536,16 @@ export default function FileManager(props) {
                         </span>
                       ) : (
                         <span className="fm-actions">
+                          {effectiveResolveUrl && getMediaType(name) ? (
+                            <button
+                              type="button"
+                              className="fm-btn fm-btn-ghost fm-btn-sm"
+                              onClick={(e) => handlePreview(e, fullPath)}
+                              title="Prévisualiser"
+                            >
+                              Prévisualiser
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             className="fm-btn fm-btn-ghost fm-btn-sm"
@@ -587,6 +668,44 @@ export default function FileManager(props) {
                 Supprimer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {previewState.open && (
+        <div
+          className="fm-preview-overlay"
+          onClick={closePreview}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Prévisualisation"
+        >
+          <div className="fm-preview-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="fm-preview-close"
+              onClick={closePreview}
+              aria-label="Fermer"
+            >
+              &times;
+            </button>
+            {previewState.error ? (
+              <p className="fm-preview-error">{previewState.error}</p>
+            ) : previewState.url ? (
+              <>
+                {previewState.mediaType === 'image' && (
+                  <img src={previewState.url} alt={previewState.path} className="fm-preview-media" />
+                )}
+                {previewState.mediaType === 'audio' && (
+                  <audio controls src={previewState.url} className="fm-preview-media" />
+                )}
+                {previewState.mediaType === 'video' && (
+                  <video controls src={previewState.url} className="fm-preview-media" />
+                )}
+              </>
+            ) : (
+              <div className="fm-loading">Chargement…</div>
+            )}
           </div>
         </div>
       )}

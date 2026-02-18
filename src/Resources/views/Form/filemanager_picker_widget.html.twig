@@ -1,7 +1,8 @@
 {% use "form_div_layout.html.twig" %}
 {% block filemanager_picker_widget %}
 {% set channel = form.vars.id %}
-{% set resolve_url = resolve_url_route is defined ? path(resolve_url_route) : '' %}
+{% set resolve_url = form.vars.resolve_url_route is defined ? path(form.vars.resolve_url_route) : '' %}
+
 <div class="filemanager-picker-widget" data-filemanager-picker data-channel="{{ channel|e('html_attr') }}" data-picker-url="{{ picker_url|e('html_attr') }}" data-value-type="{{ value_type|default('path')|e('html_attr') }}" data-resolve-url="{{ resolve_url|e('html_attr') }}">
     {{ block('form_widget_simple') }}
     <button type="button" class="filemanager-picker-btn">{{ button_label }}</button>

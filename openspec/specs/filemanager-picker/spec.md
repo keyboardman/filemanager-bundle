@@ -21,7 +21,7 @@ The file manager UI SHALL support a “picker mode” suitable for embedding in 
 
 ### Requirement: Selection sends a postMessage to the parent window
 
-When a file is selected in picker mode, the UI SHALL send a `window.postMessage` event to the parent window containing the selected file path/key and the picker channel.
+When a file is selected in picker mode, the UI SHALL send a `window.postMessage` event to the parent window containing the selected file path/key, the current filesystem name, and the picker channel.
 
 #### Scenario: Selecting a file posts a message
 
@@ -30,6 +30,7 @@ When a file is selected in picker mode, the UI SHALL send a `window.postMessage`
   - **type** = `keyboardman.filemanager.picked`
   - **channel** = the `channel` provided in the query
   - **path** = the selected file path/key (string)
+  - **filesystem** = the current filesystem name (string, e.g. `default`, `s3`)
 
 #### Scenario: Message is restricted to same-origin
 

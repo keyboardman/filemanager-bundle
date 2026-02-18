@@ -16,7 +16,8 @@
          data-initial-filesystem="{{ initial_filesystem|e('html_attr') }}"
          data-available-filesystems="{{ available_filesystems|json_encode|e('html_attr') }}"
          data-picker="{{ picker ? '1' : '0' }}"
-         data-channel="{{ channel|e('html_attr') }}">
+         data-channel="{{ channel|e('html_attr') }}"
+         data-resolve-url="{{ resolve_url|e('html_attr') }}">
     </div>
     <script src="{{ asset('bundles/keyboardmanfilemanager/build/manager.js') }}"></script>
 </body>

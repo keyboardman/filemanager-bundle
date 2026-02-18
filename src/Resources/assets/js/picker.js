@@ -8,8 +8,12 @@
     function openModal(widget) {
         const url = widget.getAttribute('data-picker-url') || '/filemanager';
         const channel = widget.getAttribute('data-channel') || '';
+        const resolveUrl = widget.getAttribute('data-resolve-url') || '';
         const base = url.indexOf('?') !== -1 ? url + '&' : url + '?';
-        const iframeSrc = base + 'picker=1&channel=' + encodeURIComponent(channel);
+        let iframeSrc = base + 'picker=1&channel=' + encodeURIComponent(channel);
+        if (resolveUrl) {
+            iframeSrc += '&resolve_url=' + encodeURIComponent(resolveUrl);
+        }
 
         let overlay = document.getElementById('filemanager-picker-overlay');
         if (!overlay) {

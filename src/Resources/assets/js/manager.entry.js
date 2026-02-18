@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const availableFilesystems = availableFilesystemsRaw ? JSON.parse(availableFilesystemsRaw) : ['default', 's3'];
   const pickerMode = layout.getAttribute('data-picker') === '1';
   const channel = layout.getAttribute('data-channel') || '';
+  const resolveUrl = layout.getAttribute('data-resolve-url') || '';
 
   const root = createRoot(layout);
   root.render(
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       availableFilesystems={availableFilesystems}
       pickerMode={pickerMode}
       channel={channel}
+      resolveUrl={resolveUrl}
     />
   );
 });

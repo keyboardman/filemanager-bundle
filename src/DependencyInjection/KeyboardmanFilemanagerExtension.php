@@ -15,7 +15,8 @@ final class KeyboardmanFilemanagerExtension extends Extension
     {
         $config = $this->processConfiguration(new Configuration(), $configs);
         $container->setParameter('keyboardman_filemanager.url_route', $config['url_route'] ?? null);
-        $container->setParameter('keyboardman_filemanager.available_filesystems', $config['available_filesystems'] ?? ['default', 's3']);
+        $filesystems = $config['available_filesystems'] ?? ['default', 's3'];
+        $container->setParameter('keyboardman_filemanager.available_filesystems', array_values(array_unique($filesystems, SORT_REGULAR)));
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');

@@ -36,6 +36,7 @@ final class FilemanagerController
             'available_filesystems' => $this->availableFilesystems,
             'picker' => $dto->picker,
             'channel' => $dto->channel ?? '',
+            'resolve_url' => $dto->resolveUrl ?? '',
         ]));
     }
 }

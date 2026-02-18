@@ -16,6 +16,7 @@ final class FilemanagerQueryDto
         public readonly bool $picker = false,
         public readonly ?string $channel = null,
         public readonly ?string $filesystem = null,
+        public readonly ?string $resolveUrl = null,
     ) {
     }
 
@@ -34,6 +35,7 @@ final class FilemanagerQueryDto
             picker: $request->query->get('picker') === '1',
             channel: $request->query->get('channel'),
             filesystem: $request->query->get('filesystem'),
+            resolveUrl: $request->query->get('resolve_url'),
         );
     }
 

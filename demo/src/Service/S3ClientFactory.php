@@ -32,6 +32,11 @@ final class S3ClientFactory
                 'key' => $accessKey,
                 'secret' => $secretKey,
             ],
+            'http' => [
+                'verify' => false,
+                'connect_timeout' => 30,
+                'timeout' => 300, // 5 min pour téléchargements volumineux
+            ],
         ]);
 
         if (!empty($bucket)) {

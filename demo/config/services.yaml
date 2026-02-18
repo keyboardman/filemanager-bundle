@@ -50,6 +50,13 @@ services:
         - '@app.s3_client'
         - '%env(MINIO_BUCKET)%'
         - ''
+
+    App\Controller\DemoResolveUrlController:
+        arguments:
+            $s3Client: '@app.s3_client'
+            $minioBucket: '%env(MINIO_BUCKET)%'
+        tags: ['controller.service_arguments']
+
 keyboardman_filemanager:
   url_route: demo_serve_file
   available_filesystems: ['default', 's3']

@@ -29,7 +29,19 @@
   --sidebar-border: oklch(0.93 0.005 260);
 }
 
-/* Base */
+/* Document (iframe) : pas de scroll, une seule scrollbar dans .fm-main */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.layout {
+  height: 100%;
+  overflow: hidden;
+  display: block;
+}
+
+/* Base — occupe tout l’iframe, une seule zone scroll (fm-main) */
 .fm-root {
   --fm-bg: var(--background);
   --fm-fg: var(--foreground);
@@ -41,8 +53,9 @@
   line-height: 1.5;
   color: var(--fm-fg);
   background: var(--fm-bg);
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Buttons — shadcn button variants */
@@ -157,6 +170,10 @@
 }
 
 .fm-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -196,9 +213,11 @@
 .fm-sidebar {
   width: 240px;
   min-width: 200px;
+  flex-shrink: 0;
   background: var(--sidebar);
   border-right: 1px solid var(--sidebar-border);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0.5rem 0;
 }
 
@@ -396,4 +415,62 @@
   padding: 1.5rem;
   font-size: 0.875rem;
   text-align: center;
+}
+
+/* Preview modal — images, audio, video */
+.fm-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+.fm-preview-content {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: min(90vw, 800px);
+  max-height: min(90vh, 600px);
+  overflow: auto;
+  box-shadow: 0 25px 50px -12px oklch(0 0 0 / 0.35);
+}
+.fm-preview-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.fm-preview-close:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.fm-preview-media {
+  display: block;
+  max-width: 100%;
+  max-height: min(80vh, 500px);
+  margin: 0 auto;
+}
+.fm-preview-media[controls] {
+  width: 100%;
+  min-width: 280px;
+}
+.fm-preview-error {
+  color: var(--destructive);
+  font-size: 0.875rem;
+  margin: 0;
 }
