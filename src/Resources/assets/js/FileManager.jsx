@@ -61,6 +61,7 @@ export default function FileManager(props) {
     initialFilterType = '',
     initialFilterSearch = '',
     initialSort = 'asc',
+    initialFilesystem = 'default',
     pickerMode = false,
     channel = '',
   } = props;
@@ -69,6 +70,7 @@ export default function FileManager(props) {
   const [filterType, setFilterType] = useState(initialFilterType);
   const [filterSearch, setFilterSearch] = useState(initialFilterSearch);
   const [sort, setSort] = useState(initialSort);
+  const [filesystem, setFilesystem] = useState(initialFilesystem);
   const [allPaths, setAllPaths] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,7 +82,7 @@ export default function FileManager(props) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const fileInputRef = React.useRef(null);
 
-  const api = React.useMemo(() => createFilesystemApi(apiBase), [apiBase]);
+  const api = React.useMemo(() => createFilesystemApi(apiBase, filesystem), [apiBase, filesystem]);
 
   const showMessage = useCallback((text, type) => {
     setMessage({ text, type });
@@ -95,13 +97,14 @@ export default function FileManager(props) {
       if (filterSearch) params.set('filter[search]', filterSearch);
       const sortVal = sort === 'asc' ? 'name_asc' : 'name_desc';
       params.set('sort', sortVal);
+      if (filesystem && filesystem !== 'default') params.set('filesystem', filesystem);
       if (pickerMode && channel) {
         params.set('picker', '1');
         params.set('channel', channel);
       }
       return window.location.pathname + (params.toString() ? '?' + params.toString() : '');
     },
-    [filterType, filterSearch, sort, pickerMode, channel]
+    [filterType, filterSearch, sort, filesystem, pickerMode, channel]
   );
 
   const fetchList = useCallback(() => {
@@ -150,6 +153,12 @@ export default function FileManager(props) {
   const handleFilterChange = (e) => setFilterType(e.target.value);
   const handleFilterSearchChange = (e) => setFilterSearch(e.target.value);
   const handleSortChange = (e) => setSort(e.target.value);
+  const handleFilesystemChange = (e) => {
+    const newFilesystem = e.target.value;
+    setFilesystem(newFilesystem);
+    setCurrentPath(''); // Reset au root lors du changement de filesystem
+    // La liste sera rechargée automatiquement via useEffect car api change
+  };
 
   const handleRowClick = (isDir, fullPath) => {
     if (isDir) handleNavigate(fullPath);
@@ -297,6 +306,18 @@ export default function FileManager(props) {
         </div>
         <div className="fm-toolbar">
           <label className="fm-dialog-label" style={{ marginBottom: 0, marginRight: '0.25rem' }}>
+            Stockage
+          </label>
+          <select
+            className="fm-select"
+            value={filesystem}
+            onChange={handleFilesystemChange}
+            style={{ width: 'auto' }}
+          >
+            <option value="default">Local</option>
+            <option value="s3">S3 / MinIO</option>
+          </select>
+          <label className="fm-dialog-label" style={{ marginBottom: 0, marginRight: '0.25rem', marginLeft: '0.75rem' }}>
             Filtre
           </label>
           <select

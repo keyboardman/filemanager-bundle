@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialFilterType = layout.getAttribute('data-initial-filter-type') || '';
   const initialFilterSearch = layout.getAttribute('data-initial-filter-search') || '';
   const initialSort = layout.getAttribute('data-initial-sort') || 'asc';
+  const initialFilesystem = layout.getAttribute('data-initial-filesystem') || 'default';
   const pickerMode = layout.getAttribute('data-picker') === '1';
   const channel = layout.getAttribute('data-channel') || '';
 
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initialFilterType={initialFilterType}
       initialFilterSearch={initialFilterSearch}
       initialSort={initialSort}
+      initialFilesystem={initialFilesystem}
       pickerMode={pickerMode}
       channel={channel}
     />

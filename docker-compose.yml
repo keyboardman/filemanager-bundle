@@ -1,24 +1,22 @@
-# Tests : lancer les tests PHPUnit du bundle
-#   docker compose run --rm test
+# MinIO uniquement : pour tester le stockage S3 avec la démo (sans lancer la démo dans Docker).
+#   docker compose up minio
+# Console MinIO : http://localhost:9001 (minioadmin / minioadmin)
+# API S3 : http://localhost:9000
 #
-# Démo : lancer l'interface file manager (port 8000)
-#   docker compose up demo
-#   Puis ouvrir http://localhost:8000/filemanager
+# Tests et démo se lancent en local : make test, make demo (symfony serve).
 
 services:
-  test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["./vendor/bin/phpunit"]
-
-  demo:
-    build:
-      context: .
-      dockerfile: Dockerfile.demo
+  minio:
+    image: minio/minio:latest
     ports:
-      - "8000:8000"
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Console web
     volumes:
-      # Monter le stockage pour voir les fichiers uploadés dans demo/var/storage sur l'hôte
-      - ./demo/var/storage:/app/demo/var/storage
-    command: ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+
+volumes:
+  minio_data: {}

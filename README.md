@@ -65,14 +65,14 @@ Voir [docs/testing.md](docs/testing.md) pour la structure des tests.
 
 ## Développement – Tester la démo en local (sans Docker)
 
-Pour lancer l’application de démo avec le serveur PHP intégré et voir les modifications JS en direct :
+Pour lancer l’application de démo avec **symfony serve** et voir les modifications JS en direct :
 
 1. **Une fois** : installer les dépendances et lier les assets à la démo  
    ```bash
    make install-demo
    ```
 
-2. **Démarrer la démo** (serveur sur http://127.0.0.1:8000)  
+2. **Démarrer la démo** (symfony serve sur http://127.0.0.1:8000)  
    ```bash
    make demo
    ```  
@@ -84,11 +84,11 @@ Pour lancer l’application de démo avec le serveur PHP intégré et voir les m
    ```  
    Les changements JS/CSS sont alors servis par la démo (symlink) ; il suffit de rafraîchir la page.
 
-Voir `make help` pour toutes les commandes.
+`make demo` utilise la [Symfony CLI](https://symfony.com/download) (`symfony serve`). Voir `make help` pour toutes les commandes.
 
-## Docker (optionnel)
+## Docker (MinIO uniquement)
 
-Pour lancer les tests ou la démo dans un conteneur : `make test-docker`, `make demo-docker`, `make docker-down`. Voir le `Makefile` et `docker-compose.yml`.
+Docker sert uniquement à lancer **MinIO** pour tester le stockage S3 en local : `make minio` (ou `docker compose up minio`). Tests et démo s'exécutent en local. Voir [docs/docker.md](docs/docker.md).
 
 ## Documentation
 

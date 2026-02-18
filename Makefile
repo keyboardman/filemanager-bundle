@@ -17,7 +17,7 @@ help: ## Affiche cette aide
 # Installation de la démo (sans Docker)
 install-demo: ## Installe les deps + build assets + symlink pour la démo
 	@echo "📦 Installation des dépendances de la démo..."
-	cd $(DEMO_DIR) && composer install
+	cd $(DEMO_DIR) && composer update
 	@echo "📦 Installation des dépendances npm du bundle..."
 	npm ci
 	@echo "🔨 Build des assets (JS/CSS)..."
@@ -26,8 +26,8 @@ install-demo: ## Installe les deps + build assets + symlink pour la démo
 	./scripts/demo-assets-symlink.sh
 	@echo "✅ Démo prête. Lancez \033[1mmake demo\033[0m puis ouvrez http://127.0.0.1:$(DEMO_PORT)/filemanager"
 
-# Démarrer la démo avec le serveur PHP intégré
-demo: ## Démarre la démo sur http://127.0.0.1:$(DEMO_PORT) (sans Docker)
+# Démarrer la démo avec le serveur Symfony (symfony serve)
+demo: ## Démarre la démo avec symfony serve sur http://127.0.0.1:$(DEMO_PORT)
 	@if [ ! -d "$(DEMO_DIR)/vendor" ]; then echo "❌ Exécutez d'abord: make install-demo"; exit 1; fi
 	@if [ ! -L "$(DEMO_DIR)/public/bundles/keyboardmanfilemanager" ] && [ ! -d "$(DEMO_DIR)/public/bundles/keyboardmanfilemanager" ]; then \
 		echo "⚠️  Assets non liés. Exécution de ./scripts/demo-assets-symlink.sh"; \
@@ -35,7 +35,7 @@ demo: ## Démarre la démo sur http://127.0.0.1:$(DEMO_PORT) (sans Docker)
 	fi
 	@echo "🚀 Démo sur http://127.0.0.1:$(DEMO_PORT)/filemanager"
 	@echo "   Pour voir les modifs JS en direct : lancez \033[1mmake watch\033[0m dans un autre terminal."
-	cd $(DEMO_DIR) && php -S 127.0.0.1:$(DEMO_PORT) -t public
+	cd $(DEMO_DIR) && symfony serve --port=$(DEMO_PORT)
 
 # Watch des assets : les changements JS sont servis par la démo (symlink)
 watch: ## Rebuild automatique des assets à chaque modification
@@ -57,19 +57,11 @@ clean: ## Supprime le cache et les artefacts de la démo
 	rm -rf $(DEMO_DIR)/var/cache/*
 	@echo "Cache démo supprimé."
 
-# --- Docker (optionnel, pour CI ou sans PHP/Composer local) ---
+# --- Docker : MinIO uniquement (pour tester S3 en local) ---
 COMPOSE := docker compose
-SERVICE_TEST := test
-SERVICE_DEMO := demo
 
-demo-docker: ## [Docker] Démarre la démo dans un conteneur (port 8000)
-	$(COMPOSE) build $(SERVICE_DEMO)
-	@echo "🚀 Démo Docker sur http://localhost:8000/filemanager"
-	$(COMPOSE) up $(SERVICE_DEMO)
+minio: ## [Docker] Démarre MinIO (API S3 + console sur 9000 / 9001)
+	$(COMPOSE) up minio
 
-test-docker: ## [Docker] Lance les tests PHPUnit dans un conteneur
-	$(COMPOSE) build $(SERVICE_TEST)
-	$(COMPOSE) run --rm $(SERVICE_TEST)
-
-docker-down: ## [Docker] Arrête les conteneurs
+minio-down: ## [Docker] Arrête MinIO
 	$(COMPOSE) down

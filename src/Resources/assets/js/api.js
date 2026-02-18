@@ -3,8 +3,6 @@
  */
 import axios from 'axios';
 
-const FILESYSTEM = 'default';
-
 function createClient(apiBase) {
   const client = axios.create({ baseURL: apiBase });
   client.interceptors.response.use(
@@ -21,12 +19,12 @@ function createClient(apiBase) {
   return client;
 }
 
-export function createFilesystemApi(apiBase = '/api/filesystem') {
+export function createFilesystemApi(apiBase = '/api/filesystem', filesystem = 'default') {
   const client = createClient(apiBase);
 
   return {
     list(params) {
-      const q = new URLSearchParams({ filesystem: FILESYSTEM });
+      const q = new URLSearchParams({ filesystem });
       if (params.path) q.set('path', params.path);
       if (params.type) q.set('type', params.type);
       if (params.filterSearch) q.set('filter[search]', params.filterSearch);
@@ -35,40 +33,40 @@ export function createFilesystemApi(apiBase = '/api/filesystem') {
     },
     upload(key, file) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('key', key);
       fd.append('file', file);
       return client.post('/upload', fd);
     },
     uploadMultiple(keyPrefix, files) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('key', keyPrefix);
       for (let i = 0; i < files.length; i++) fd.append('files[]', files[i]);
       return client.post('/upload-multiple', fd);
     },
     rename(source, target) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('source', source);
       fd.append('target', target);
       return client.post('/rename', fd);
     },
     delete(path) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('path', path);
       return client.post('/delete', fd);
     },
     createDirectory(path) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('path', path);
       return client.post('/create-directory', fd);
     },
     uploadPlaceholderFile(key, blob) {
       const fd = new FormData();
-      fd.append('filesystem', FILESYSTEM);
+      fd.append('filesystem', filesystem);
       fd.append('key', key);
       fd.append('file', blob, 'keep.png');
       return client.post('/upload', fd);

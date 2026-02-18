@@ -15,6 +15,7 @@ final class FilemanagerQueryDto
         public readonly ?string $sort = null,
         public readonly bool $picker = false,
         public readonly ?string $channel = null,
+        public readonly ?string $filesystem = null,
     ) {
     }
 
@@ -32,6 +33,7 @@ final class FilemanagerQueryDto
             sort: $request->query->get('sort'),
             picker: $request->query->get('picker') === '1',
             channel: $request->query->get('channel'),
+            filesystem: $request->query->get('filesystem'),
         );
     }
 

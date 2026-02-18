@@ -26,6 +26,7 @@ final class FilemanagerController
             'initial_filter_type' => $dto->getFilterType() ?? '',
             'initial_filter_search' => $dto->filterSearch ?? '',
             'initial_sort' => $dto->getSortForApi() ?? 'asc',
+            'initial_filesystem' => $dto->filesystem ?? 'default',
             'picker' => $dto->picker,
             'channel' => $dto->channel ?? '',
         ]));

@@ -137,8 +137,14 @@
         <div class="cards">
             <div class="card">
                 <h2>File Manager <span class="badge">Principal</span></h2>
-                <p>Interface complète de gestion de fichiers : navigation, filtres, tri, upload, renommer, supprimer.</p>
-                <a href="{{ path('keyboardman_filemanager') }}" class="btn btn-primary">Ouvrir le File Manager</a>
+                <p>Interface complète de gestion de fichiers : navigation, filtres, tri, upload, renommer, supprimer (stockage local).</p>
+                <a href="{{ path('keyboardman_filemanager') }}" class="btn btn-primary">Ouvrir le File Manager (local)</a>
+            </div>
+
+            <div class="card">
+                <h2>File Manager <span class="badge">S3 / MinIO</span></h2>
+                <p>Même interface branchée sur un filesystem S3 (MinIO). Nécessite MinIO démarré et le bucket <code>filemanager-demo</code> créé.</p>
+                <a href="{{ path('keyboardman_filemanager', { filesystem: 's3' }) }}" class="btn btn-secondary">Ouvrir le File Manager (S3)</a>
             </div>
 
             <div class="card">

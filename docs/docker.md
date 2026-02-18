@@ -1,41 +1,58 @@
-# Docker
+# Docker (MinIO uniquement)
 
-## Tests
+Docker est utilisé **uniquement pour MinIO** afin de tester le stockage S3 en local. Les tests et la démo s'exécutent sur la machine hôte.
 
-Construire l’image et lancer les tests PHPUnit :
-
-```bash
-docker build -t keyboardman/filemanager-bundle .
-docker run --rm keyboardman/filemanager-bundle ./vendor/bin/phpunit
-```
-
-Avec docker-compose :
+## Tests (sans Docker)
 
 ```bash
-docker compose run --rm test
+make test
+# ou
+./vendor/bin/phpunit
 ```
 
-## Démo
+## Démo (sans Docker)
 
-L’image de démo embarque une application Symfony minimale (dossier `demo/`) avec keyboardman/filesystem-bundle et keyboardman/filemanager-bundle, et un adapter Flysystem local (`var/storage`).
+La démo utilise le serveur Symfony en local :
 
-**Build et run :**
 ```bash
-docker build -f Dockerfile.demo -t keyboardman/filemanager-demo .
-docker run --rm -p 8000:8000 keyboardman/filemanager-demo
+make install-demo   # une fois
+make demo           # lance symfony serve dans demo/
 ```
 
-Puis ouvrir **http://localhost:8000/filemanager** dans le navigateur.
+Puis ouvrir **http://127.0.0.1:8000/filemanager** dans le navigateur.
 
-**Avec docker-compose :**
-```bash
-docker compose up demo
-# http://localhost:8000/filemanager
-```
+## MinIO (stockage S3) avec Docker
+
+Pour tester le file manager avec un stockage S3-compatible (sans AWS) :
+
+1. **Démarrer MinIO** (Docker) :
+   ```bash
+   make minio
+   # ou : docker compose up minio
+   ```
+
+2. **Configurer la démo** : dans `demo/.env`, décommenter et adapter les variables MinIO (pointant vers `http://localhost:9000` quand MinIO tourne en Docker) :
+   ```env
+   MINIO_ENDPOINT=http://localhost:9000
+   MINIO_ACCESS_KEY=minioadmin
+   MINIO_SECRET_KEY=minioadmin
+   MINIO_BUCKET=filemanager-demo
+   MINIO_REGION=us-east-1
+   ```
+
+3. **Créer le bucket** : ouvrir la console MinIO http://localhost:9001 (identifiants : `minioadmin` / `minioadmin`), puis Object Browser → Create bucket → `filemanager-demo`.
+
+4. **Lancer la démo** : `make demo`, puis ouvrir le file manager (S3) : http://127.0.0.1:8000/filemanager?filesystem=s3
+
+| Variable            | Description                    |
+|---------------------|--------------------------------|
+| `MINIO_ENDPOINT`    | URL de l'API S3 (localhost:9000 quand MinIO est dans Docker) |
+| `MINIO_ACCESS_KEY`  | Clé d'accès                    |
+| `MINIO_SECRET_KEY`  | Secret                         |
+| `MINIO_BUCKET`      | Nom du bucket                  |
+| `MINIO_REGION`      | Région (ex. `us-east-1`)       |
 
 ## Fichiers
 
-- **Dockerfile** : image pour lancer les tests du bundle (CMD = phpunit).
-- **Dockerfile.demo** : image pour la démo (app Symfony dans `demo/`, serveur PHP sur le port 8000).
-- **docker-compose.yml** : services `test` (phpunit) et `demo` (serveur démo).
-- **.dockerignore** : exclut `vendor/`, `var/`, `.git/` du contexte de build.
+- **docker-compose.yml** : service `minio` uniquement (API S3 + console).
+- **Dockerfile** et **Dockerfile.demo** : conservés pour usage optionnel (CI, etc.) mais non requis pour le workflow local.
