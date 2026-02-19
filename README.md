@@ -5,7 +5,7 @@ Interface graphique pour l’API [keyboardman/filesystem-bundle](https://github.
 ## Prérequis
 
 - PHP 8.1+
-- Symfony 6.4+ (ou 7.0+)
+- Symfony 6.4, 7.x ou 8.x
 - [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) installé et configuré, avec **GET /api/filesystem/list** (et endpoints POST) disponibles.
 
 ## Installation

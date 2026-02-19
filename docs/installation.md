@@ -8,7 +8,7 @@ Ce guide décrit comment intégrer le bundle dans une application Symfony : pré
 
 ## En bref
 
-1. **Prérequis** : PHP 8.1+, Symfony 6.4+, [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) avec l’API exposée.
+1. **Prérequis** : PHP 8.1+, Symfony 6.4 | 7.x | 8.x, [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) avec l’API exposée.
 2. **Installation** : `composer require keyboardman/filemanager-bundle`, enregistrement du bundle, chargement des routes, `php bin/console assets:install`.
 3. **Configuration** : `config/packages/keyboardman_filemanager.yaml` — au minimum `available_filesystems` ; pour le picker en URL absolue et la résolution d’URL : `url_route`.
 4. **Sécurité** : protéger `/filemanager`, `/filemanager/resolve-url` et `/api/filesystem/*` (voir [Sécurisation de l’API](security.md)).
@@ -18,7 +18,7 @@ Ce guide décrit comment intégrer le bundle dans une application Symfony : pré
 ## 1. Prérequis
 
 - **PHP** 8.1 ou supérieur  
-- **Symfony** 6.4 ou 7.x (`framework-bundle`, `twig-bundle`, `form`)  
+- **Symfony** 6.4, 7.x ou 8.x (`framework-bundle`, `twig-bundle`, `form`)  
 - **[keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle)** installé et configuré, avec au minimum :
   - **GET** `/api/filesystem/list` (paramètres : `filesystem`, optionnel `type`, optionnel `sort`)
   - **POST** `/api/filesystem/upload`, `upload-multiple`, `rename`, `move`, `delete`, `create-directory`
