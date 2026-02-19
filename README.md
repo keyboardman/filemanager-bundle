@@ -1,56 +1,48 @@
 # Keyboardman File Manager Bundle
 
-Interface graphique pour l’API [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) : navigation, filtres (image, vidéo, audio), tri par nom, sidebar avec répertoires et « .. », liste des dossiers/fichiers, upload, renommer, déplacer, supprimer.
+Interface graphique pour l’API [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) : navigation, filtres (image, vidéo, audio), tri, sidebar avec répertoires, liste des dossiers/fichiers, upload, renommer, déplacer, supprimer.
 
 ## Prérequis
 
 - PHP 8.1+
 - Symfony 6.4+ (ou 7.0+)
-- [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) installé et configuré, avec la route **GET /api/filesystem/list** disponible.
+- [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) installé et configuré, avec **GET /api/filesystem/list** (et endpoints POST) disponibles.
 
 ## Installation
 
-1. Déclarez le dépôt (si besoin) et installez le bundle :
+1. **Composer** (dépôt à ajouter si besoin) :
+   ```bash
+   composer require keyboardman/filemanager-bundle
+   ```
 
-```bash
-composer require keyboardman/filemanager-bundle
-```
+2. **Bundle** dans `config/bundles.php` :
+   ```php
+   Keyboardman\FilemanagerBundle\KeyboardmanFilemanagerBundle::class => ['all' => true],
+   ```
 
-2. Enregistrez le bundle dans `config/bundles.php` :
+3. **Routes** dans `config/routes.yaml` :
+   ```yaml
+   keyboardman_filemanager:
+       resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
+   ```
 
-```php
-return [
-    // ...
-    Keyboardman\FilemanagerBundle\KeyboardmanFilemanagerBundle::class => ['all' => true],
-];
-```
+4. **Assets** :
+   ```bash
+   php bin/console assets:install
+   ```
 
-3. Installez les assets (CSS, JS) dans `public/` :
-
-```bash
-php bin/console assets:install
-```
-
-4. Chargez les routes du bundle dans `config/routes.yaml` :
-
-```yaml
-keyboardman_filemanager:
-    resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
-```
-
-L’interface sera accessible à l’URL **/filemanager**.
+L’interface est accessible à **/filemanager**. En production, protégez `/filemanager`, `/filemanager/resolve-url` et `/api/filesystem/*`. Voir [Sécurisation de l’API](docs/security.md).
 
 ## Utilisation
 
-- **Header** : chemin courant, filtre (Tous, Image, Vidéo, Audio), tri (Nom A→Z / Z→A). Les filtres et le tri sont envoyés à **GET /api/filesystem/list** (`type`, `sort`).
-- **Sidebar** : répertoires dérivés des `paths` retournés par l’API ; entrée « .. » pour remonter au parent (masquée à la racine).
-- **Zone principale** : liste des dossiers et fichiers du répertoire courant ; actions Renommer, Déplacer, Supprimer (POST vers l’API filesystem) ; barre d’upload (POST upload / upload-multiple).
+- **Header** : chemin courant, filtre (Tous, Image, Vidéo, Audio), tri (Nom A→Z / Z→A).
+- **Sidebar** : répertoires et « .. » ; **zone principale** : dossiers/fichiers, actions (renommer, déplacer, supprimer), upload.
 
-L’API est appelée en relatif depuis la même origine (base par défaut : `/api/filesystem`). En production, protégez la route `/filemanager` et les routes `/api/filesystem/*`. Voir [Sécurisation de l’API](docs/security.md) (token ou authentification utilisateur).
+L’API est appelée en relatif (base par défaut : `/api/filesystem`).
 
 ### Widget formulaire (picker)
 
-Un **FormType** permet d’afficher un champ texte + bouton « Parcourir » ; au clic, une modale ouvre le file manager en iframe pour sélectionner un fichier et renseigner le champ. Plusieurs champs peuvent coexister sur la même page. Voir [docs/form-picker.md](docs/form-picker.md).
+FormType champ texte + bouton « Parcourir » : modale avec file manager en iframe, valeur = `filesystem:path` ou URL absolue. Voir [Widget formulaire (picker)](docs/form-picker.md).
 
 ## Tests
 
@@ -61,45 +53,33 @@ make test
 ./vendor/bin/phpunit
 ```
 
-Voir [docs/testing.md](docs/testing.md) pour la structure des tests.
+Voir [docs/testing.md](docs/testing.md).
 
-## Développement – Tester la démo en local (sans Docker)
+## Développement – Démo en local
 
-Pour lancer l’application de démo avec **symfony serve** et voir les modifications JS en direct :
+1. **Une fois** : `make install-demo`
+2. **Démarrer** : `make demo` → http://127.0.0.1:8000/filemanager
+3. **Rebuild assets** (autre terminal) : `make watch`
 
-1. **Une fois** : installer les dépendances et lier les assets à la démo  
-   ```bash
-   make install-demo
-   ```
+Voir `make help`. [Symfony CLI](https://symfony.com/download) requise pour `make demo`.
 
-2. **Démarrer la démo** (symfony serve sur http://127.0.0.1:8000)  
-   ```bash
-   make demo
-   ```  
-   Puis ouvrir http://127.0.0.1:8000/filemanager
+## Docker (MinIO)
 
-3. **Dans un autre terminal** : rebuilder les assets à chaque modification  
-   ```bash
-   make watch
-   ```  
-   Les changements JS/CSS sont alors servis par la démo (symlink) ; il suffit de rafraîchir la page.
-
-`make demo` utilise la [Symfony CLI](https://symfony.com/download) (`symfony serve`). Voir `make help` pour toutes les commandes.
-
-## Docker (MinIO uniquement)
-
-Docker sert uniquement à lancer **MinIO** pour tester le stockage S3 en local : `make minio` (ou `docker compose up minio`). Tests et démo s'exécutent en local. Voir [docs/docker.md](docs/docker.md).
+Pour tester le stockage S3 en local : `make minio` (ou `docker compose up minio`). Voir [docs/docker.md](docs/docker.md).
 
 ## Documentation
 
-- [Installation et configuration](docs/installation.md) — prérequis, installation, routes, assets, configuration du bundle
-- [Sécurisation de l’API](docs/security.md) — token ou authentification utilisateur (firewall Symfony)
-- [URL S3 publique sans expiration](docs/s3-public-url.md) — exposer des fichiers S3 via une URL publique
-- [Widget formulaire (picker) et extension Twig](docs/form-picker.md) — FormType, options, `value_type`, fonction Twig `filemanager_url()`, service `FilemanagerUrlResolver`
-- [Utilisation de l’interface](docs/usage.md) — file manager (header, sidebar, actions)
-- [Assets (CSS, JS, build Webpack)](docs/assets.md)
-- [Tests](docs/testing.md)
-- [Docker (MinIO)](docs/docker.md)
+| Document | Contenu |
+|----------|---------|
+| [Installation et configuration](docs/installation.md) | Prérequis, installation, routes, assets, configuration (`url_route`, `available_filesystems`, `s3_filesystems`) |
+| [Sécurisation de l’API](docs/security.md) | Token ou authentification utilisateur (firewall Symfony) |
+| [URL S3 (publique ou pré-signée)](docs/s3-public-url.md) | Détection S3 (`S3FilesystemDetector`), URL publique ou redirection pré-signée |
+| [Widget formulaire (picker) et Twig](docs/form-picker.md) | FormType, `value_type`, `filemanager_url()`, `FilemanagerUrlResolver` |
+| [API Platform : retourner l’URL](docs/api-platform.md) | Exposer l’URL résolue (en fonction du filesystem) dans les réponses API (DTO, Normalizer) |
+| [Utilisation de l’interface](docs/usage.md) | Header, sidebar, actions du file manager |
+| [Assets (build Webpack)](docs/assets.md) | CSS, JS, build |
+| [Tests](docs/testing.md) | Structure des tests |
+| [Docker (MinIO)](docs/docker.md) | MinIO pour S3 en local |
 
 ## Licence
 

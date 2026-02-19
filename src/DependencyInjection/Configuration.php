@@ -22,6 +22,11 @@ final class Configuration implements ConfigurationInterface
                 ->defaultValue(['default', 's3'])
                 ->scalarPrototype()->end()
             ->end()
+            ->arrayNode('s3_filesystems')
+                ->info('List of filesystem names that are backed by S3 (or compatible). Used to detect S3 and apply redirect/presigned URL logic in the application.')
+                ->defaultValue([])
+                ->scalarPrototype()->end()
+            ->end()
             ->end();
 
         return $treeBuilder;

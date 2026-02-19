@@ -2,14 +2,15 @@
 
 ← [Retour à la documentation](../README.md#documentation)
 
-Le bundle fournit un **FormType** (champ texte + bouton « Parcourir ») et une **extension Twig** pour afficher l’URL d’un fichier à partir de la valeur du champ.
+Le bundle fournit un **FormType** (champ texte + bouton « Parcourir ») pour choisir un fichier via le file manager, et une **extension Twig** pour afficher l’URL d’un fichier à partir de la valeur du champ.
 
 ---
 
 ## Prérequis
 
-- Symfony Form et thème Twig configuré
+- Symfony Form et thème Twig configurés
 - Assets du picker (JS + CSS) chargés sur les pages qui utilisent le champ
+- Pour `value_type` = `url` : `url_route` configuré (voir [Installation](installation.md#6-configuration-du-bundle))
 
 ---
 
@@ -41,7 +42,7 @@ Sur toute page contenant un formulaire avec un champ filemanager picker :
 {% endblock %}
 ```
 
-Après `php bin/console assets:install`, les fichiers sont dans `public/bundles/keyboardmanfilemanager/build/`.
+Les fichiers sont dans `public/bundles/keyboardmanfilemanager/build/` après `php bin/console assets:install`.
 
 ---
 
@@ -53,9 +54,9 @@ Après `php bin/console assets:install`, les fichiers sont dans `public/bundles/
 use Keyboardman\FilemanagerBundle\Form\FilemanagerPickerType;
 
 $builder->add('filePath', FilemanagerPickerType::class, [
-    'label'       => 'Fichier',
-    'picker_url' => '/filemanager',   // optionnel
-    'button_label' => 'Parcourir…',   // optionnel
+    'label'        => 'Fichier',
+    'picker_url'   => '/filemanager',   // optionnel
+    'button_label' => 'Parcourir…',      // optionnel
 ]);
 ```
 
@@ -63,22 +64,22 @@ Au clic sur « Parcourir », une modale s’ouvre avec le file manager en iframe
 
 ### Format de la valeur
 
-La valeur du champ dépend de l’option **`value_type`** :
+La valeur dépend de l’option **`value_type`** :
 
 | `value_type` | Valeur stockée | Exemple |
 |--------------|----------------|---------|
-| `path` (défaut) | `filesystem:path` | `default:uploads/photo.jpg`, `s3:bucket/file.pdf` |
-| `url` | URL absolue du fichier | `https://example.com/serve/default/uploads/photo.jpg` |
+| `path` (défaut) | `filesystem:path` | `default:uploads/photo.jpg`, `s3:uploads/file.pdf` |
+| `url` | URL absolue du fichier | `https://example.com/serve/s3/uploads/photo.jpg` |
 
-Avec `path`, le préfixe indique le stockage (ex. `default`, `s3`). Une valeur sans `:` (ancien format) est traitée comme `default:path` par le résolveur d’URL.
+Avec `path`, le préfixe indique le stockage. Une valeur sans `:` est traitée comme `default:path` par le résolveur.
 
-### Options du FormType
+### Options
 
 | Option | Type | Défaut | Description |
 |--------|------|--------|-------------|
 | `picker_url` | `string` | `'/filemanager'` | URL de la page file manager (mode picker). |
 | `button_label` | `string` | `'Parcourir…'` | Libellé du bouton. |
-| `value_type` | `'path'` ou `'url'` | `'path'` | `path` = valeur `filesystem:path` ; `url` = URL absolue (nécessite `url_route` configuré). |
+| `value_type` | `'path'` ou `'url'` | `'path'` | `path` = `filesystem:path` ; `url` = URL absolue (nécessite `url_route`). |
 | `resolve_url_route` | `string` | `'keyboardman_filemanager_resolve_url'` | Route pour résoudre `filesystem:path` en URL (utilisée quand `value_type` = `url`). |
 
 ### Exemple : champ en URL absolue
@@ -90,11 +91,11 @@ $builder->add('fileUrl', FilemanagerPickerType::class, [
 ]);
 ```
 
-La route de résolution doit être configurée (voir [Installation – Configuration](installation.md#5-configuration-du-bundle)).
+La route de résolution et `url_route` doivent être configurés (voir [Installation](installation.md#6-configuration-du-bundle)).
 
 ### Plusieurs champs sur la même page
 
-Chaque instance utilise un **channel** unique (dérivé de l’id du champ). La modale et le message `postMessage` ciblent le bon champ ; plusieurs pickers peuvent coexister sans conflit.
+Chaque instance utilise un **channel** unique (dérivé de l’id du champ). Plusieurs pickers peuvent coexister sans conflit.
 
 ### Protocole postMessage (iframe → parent)
 
@@ -111,32 +112,21 @@ L’origin est vérifiée côté parent (`event.origin === window.location.origi
 
 ## 4. Extension Twig : `filemanager_url()`
 
-Pour afficher un fichier ou un lien à partir d’une valeur `filesystem:path` (ou d’un champ picker), le bundle expose la fonction Twig **`filemanager_url`**.
-
-### Utilisation
+Pour afficher un fichier ou un lien à partir d’une valeur `filesystem:path` :
 
 ```twig
-{# À partir de la valeur d’un champ #}
 <img src="{{ filemanager_url(form.filePath.vars.value) }}" alt="">
 
-{# À partir d’une chaîne #}
 <a href="{{ filemanager_url('s3:uploads/document.pdf') }}">Télécharger</a>
 ```
 
-### Prérequis
+**Prérequis** : `url_route` configuré. Si `url_route` est `null`, la fonction retourne une chaîne vide.
 
-- **`url_route`** doit être configuré dans `config/packages/keyboardman_filemanager.yaml` (voir [Installation – Configuration](installation.md#5-configuration-du-bundle)).
-- Si `url_route` est `null`, la fonction retourne une chaîne vide.
-
-### Rétrocompatibilité
-
-Une valeur sans `:` (ancien format « path seul ») est traitée comme `default:path`.
+Une valeur sans `:` est traitée comme `default:path`.
 
 ---
 
 ## 5. Service PHP : `FilemanagerUrlResolver`
-
-Pour résoudre une valeur `filesystem:path` en URL en PHP :
 
 ```php
 use Keyboardman\FilemanagerBundle\Service\FilemanagerUrlResolver;
@@ -148,17 +138,26 @@ $url = $this->urlResolver->resolve('s3:uploads/photo.jpg');
 // ['default', 'folder/file.txt']
 ```
 
-- **`resolve(string $filesystemPath): string`** — retourne l’URL absolue (ou `''` si `url_route` non configuré).
-- **`parse(string $value): array`** — retourne `[filesystem, path]` ; une valeur sans `:` est traitée comme `default:path`.
+- **`resolve(string $filesystemPath): string`** — URL absolue (ou `''` si `url_route` non configuré).
+- **`parse(string $value): array`** — `[filesystem, path]` ; valeur sans `:` → `default:path`.
 
 ---
 
-## 6. Résumé
+## Résumé
 
 | Besoin | Solution |
 |--------|----------|
-| Champ formulaire pour choisir un fichier | `FilemanagerPickerType` + thème + assets picker |
-| Valeur = identifiant stockage + chemin | `value_type` = `path` (défaut) |
-| Valeur = URL directe | `value_type` = `url` + config `url_route` |
+| Champ pour choisir un fichier | `FilemanagerPickerType` + thème + assets picker |
+| Valeur = filesystem + chemin | `value_type` = `path` (défaut) |
+| Valeur = URL absolue | `value_type` = `url` + `url_route` configuré |
 | Afficher l’URL en Twig | `filemanager_url(valeur)` |
 | Résoudre en PHP | `FilemanagerUrlResolver::resolve()` / `parse()` |
+
+---
+
+## Voir aussi
+
+- [Installation et configuration](installation.md)
+- [API Platform : retourner l’URL](api-platform.md)
+- [URL S3 (publique ou pré-signée)](s3-public-url.md)
+- [Sécurisation de l’API](security.md)

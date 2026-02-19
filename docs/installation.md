@@ -2,7 +2,20 @@
 
 ← [Retour à la documentation](../README.md#documentation)
 
-## Prérequis
+Ce guide décrit comment intégrer le bundle dans une application Symfony : prérequis, installation, routes, assets et configuration.
+
+---
+
+## En bref
+
+1. **Prérequis** : PHP 8.1+, Symfony 6.4+, [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle) avec l’API exposée.
+2. **Installation** : `composer require keyboardman/filemanager-bundle`, enregistrement du bundle, chargement des routes, `php bin/console assets:install`.
+3. **Configuration** : `config/packages/keyboardman_filemanager.yaml` — au minimum `available_filesystems` ; pour le picker en URL absolue et la résolution d’URL : `url_route`.
+4. **Sécurité** : protéger `/filemanager`, `/filemanager/resolve-url` et `/api/filesystem/*` (voir [Sécurisation de l’API](security.md)).
+
+---
+
+## 1. Prérequis
 
 - **PHP** 8.1 ou supérieur  
 - **Symfony** 6.4 ou 7.x (`framework-bundle`, `twig-bundle`, `form`)  
@@ -12,7 +25,7 @@
 
 ---
 
-## 1. Installation Composer
+## 2. Installation Composer
 
 Si le bundle n’est pas sur Packagist, ajoutez le dépôt dans `composer.json` :
 
@@ -35,7 +48,7 @@ composer require keyboardman/filemanager-bundle
 
 ---
 
-## 2. Enregistrement du bundle
+## 3. Enregistrement du bundle
 
 Dans `config/bundles.php` :
 
@@ -48,7 +61,7 @@ return [
 
 ---
 
-## 3. Routes
+## 4. Routes
 
 Dans `config/routes.yaml` (ou équivalent) :
 
@@ -57,19 +70,19 @@ keyboardman_filemanager:
     resource: '@KeyboardmanFilemanagerBundle/Resources/config/routes.yaml'
 ```
 
-Le bundle enregistre deux routes. L’API filesystem est fournie par votre application (keyboardman/filesystem-bundle) :
+### Routes exposées
 
 | Route | Méthode | Rôle |
 |-------|---------|------|
 | `/filemanager` | GET | Page de l’interface du file manager (navigation, upload, etc.). |
-| `/filemanager/resolve-url` | GET | Résolution d’une valeur `filesystem:path` en URL absolue (utilisée par le form picker en `value_type` = `url` et pour la prévisualisation). |
-| `/api/filesystem/*` | GET/POST | API filesystem (list, upload, upload-multiple, rename, delete, create-directory). **Non fournie par ce bundle** : à exposer par votre application via [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle). |
+| `/filemanager/resolve-url` | GET | Résolution `filesystem:path` → URL absolue (form picker `value_type` = `url`, prévisualisation). Paramètres : `filesystem`, `path`. |
+| `/api/filesystem/*` | GET/POST | API filesystem (list, upload, rename, delete, create-directory). **Fournie par votre application** via [keyboardman/filesystem-bundle](https://github.com/keyboardman/filesystem-bundle), pas par ce bundle. |
 
-En production, ces routes doivent être protégées. Voir [Sécurisation de l’API](security.md).
+En production, toutes ces routes doivent être protégées. Voir [Sécurisation de l’API](security.md).
 
 ---
 
-## 4. Assets (CSS, JS)
+## 5. Assets (CSS, JS)
 
 Les assets sont dans `Resources/public/`. Pour les exposer :
 
@@ -85,27 +98,34 @@ php bin/console assets:install --symlink
 
 ---
 
-## 5. Configuration du bundle
+## 6. Configuration du bundle
 
 Fichier : `config/packages/keyboardman_filemanager.yaml`
 
 ```yaml
 keyboardman_filemanager:
-    # Route utilisée pour générer l’URL d’un fichier (paramètres : filesystem, path).
-    # Requis pour le form picker en value_type = url et pour la fonction Twig filemanager_url().
+    # Nom de la route qui sert un fichier (paramètres : filesystem, path).
+    # Requis pour value_type = url (picker), filemanager_url() et resolve-url.
     url_route: null   # ex. : app_serve_file
 
-    # Liste des filesystems affichés dans le sélecteur du file manager.
-    # N’indiquer que les filesystems réellement configurés (évite l’erreur « Unknown filesystem »).
+    # Filesystems proposés dans le file manager (dropdown « Stockage »).
+    # N’indiquer que ceux réellement configurés (évite « Unknown filesystem »).
     available_filesystems: ['default', 's3']
+
+    # Filesystems dont le stockage est S3 (ou compatible).
+    # Utilisé par S3FilesystemDetector pour adapter le comportement (ex. redirection URL pré-signée).
+    s3_filesystems: []   # ex. : ['s3']
 ```
+
+### Options
 
 | Option | Type | Défaut | Description |
 |--------|------|--------|-------------|
 | `url_route` | `string` ou `null` | `null` | Nom de la route qui sert le fichier (paramètres : `filesystem`, `path`). Si `null`, la résolution d’URL est désactivée. |
-| `available_filesystems` | `list<string>` | `['default', 's3']` | Noms des filesystems proposés dans le file manager (dropdown « Stockage »). |
+| `available_filesystems` | `list<string>` | `['default', 's3']` | Noms des filesystems affichés dans le file manager. |
+| `s3_filesystems` | `list<string>` | `[]` | Noms des filesystems S3 (ou compatibles). Permet à l’app de les détecter via le service `S3FilesystemDetector`. |
 
-**Exemple** avec une route applicative qui sert les fichiers :
+### Exemple minimal (stockage local uniquement)
 
 ```yaml
 keyboardman_filemanager:
@@ -113,21 +133,31 @@ keyboardman_filemanager:
     available_filesystems: ['default']
 ```
 
+### Exemple avec S3
+
+```yaml
+keyboardman_filemanager:
+    url_route: app_serve_file
+    available_filesystems: ['default', 's3']
+    s3_filesystems: ['s3']
+```
+
 ---
 
-## 6. Sécurité (production)
+## 7. Sécurité (production)
 
-- Protéger la route **/filemanager** (firewall, authentification).
-- Protéger **/filemanager/resolve-url** et les routes **/api/filesystem/***.
-- Ne pas exposer l’interface en public sans contrôle d’accès.
+- Protéger **/filemanager** et **/filemanager/resolve-url**.
+- Protéger **/api/filesystem/***.
+- Ne pas exposer l’interface sans contrôle d’accès.
 
-Pour des exemples concrets (token ou authentification utilisateur), voir [Sécurisation de l’API](security.md).
+Exemples : [Sécurisation de l’API](security.md) (token ou authentification utilisateur).
 
 ---
 
 ## Voir aussi
 
-- [Widget formulaire (picker) et résolution d’URL](form-picker.md) — FormType, `value_type`, `filemanager_url()`, `FilemanagerUrlResolver`
-- [Utilisation de l’interface](usage.md) — header, sidebar, actions du file manager
-- [Sécurisation de l’API](security.md) — token, authentification utilisateur
-- [URL S3 publique sans expiration](s3-public-url.md) — exposer des fichiers S3 via une URL publique
+- [Widget formulaire (picker) et résolution d’URL](form-picker.md)
+- [API Platform : retourner l’URL en fonction du filesystem](api-platform.md)
+- [Utilisation de l’interface](usage.md)
+- [Sécurisation de l’API](security.md)
+- [URL S3 (publique ou pré-signée)](s3-public-url.md)

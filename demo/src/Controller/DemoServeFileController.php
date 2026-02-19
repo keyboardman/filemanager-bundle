@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Aws\S3\S3Client;
+use Keyboardman\FilemanagerBundle\Service\S3FilesystemDetector;
 use Keyboardman\FilesystemBundle\Service\FileStorage;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Sert le fichier depuis le filesystem configuré (url_route pour le form picker value_type = url).
+ * Pour S3 : redirige vers une URL pré-signée (accès autorisé sans rendre le bucket public). Pour default : stream du fichier.
  */
 final class DemoServeFileController
 {
@@ -19,8 +23,13 @@ final class DemoServeFileController
         'mp3' => 'audio/mpeg', 'wav' => 'audio/wav', 'ogg' => 'audio/ogg', 'pdf' => 'application/pdf',
     ];
 
+    private const PRESIGN_EXPIRES_IN = 3600; // 1 heure
+
     public function __construct(
         private readonly FileStorage $fileStorage,
+        private readonly S3FilesystemDetector $s3Detector,
+        private readonly S3Client $s3Client,
+        private readonly string $minioBucket,
     ) {
     }
 
@@ -33,6 +42,21 @@ final class DemoServeFileController
 
         if (!$this->fileStorage->hasFilesystem($filesystem)) {
             return new Response('Unknown filesystem', 404);
+        }
+
+        if ($this->s3Detector->isS3($filesystem) && $this->minioBucket !== '') {
+            if (!$this->fileStorage->has($filesystem, $path)) {
+                return new Response('Not found', 404);
+            }
+            $key = ltrim(str_replace('\\', '/', $path), '/');
+            $cmd = $this->s3Client->getCommand('GetObject', [
+                'Bucket' => $this->minioBucket,
+                'Key' => $key,
+            ]);
+            $presignedRequest = $this->s3Client->createPresignedRequest($cmd, '+' . self::PRESIGN_EXPIRES_IN . ' seconds');
+            $presignedUrl = (string) $presignedRequest->getUri();
+
+            return new RedirectResponse($presignedUrl, 302);
         }
 
         if (!$this->fileStorage->has($filesystem, $path)) {

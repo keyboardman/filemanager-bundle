@@ -1,55 +1,70 @@
-# URL S3 publique sans expiration
+# URL S3 : publique ou pré-signée
 
 ← [Retour à la documentation](../README.md#documentation)
 
-Lorsque les fichiers sont stockés sur S3 (ou un stockage compatible S3 comme MinIO), vous pouvez souhaiter exposer une **URL publique sans expiration** plutôt que de faire transiter le fichier par votre application (stream via une route Symfony). Typiquement : bucket configuré en lecture publique, ou politique de bucket qui autorise l’accès en lecture sans limite de temps.
-
-Ce bundle **ne génère pas** d’URL S3. Il s’appuie sur la stratégie de résolution d’URL que vous configurez (`url_route` ou service de résolution). C’est à votre application de fournir l’URL publique S3.
+Lorsque les fichiers sont sur S3 (ou compatible, ex. MinIO), vous pouvez exposer l’accès de deux façons : **URL publique sans expiration** (bucket public) ou **redirection vers une URL pré-signée** (bucket privé, accès temporaire). Ce bundle ne génère pas les URLs S3 ; il s’appuie sur la route que vous configurez (`url_route`). C’est à votre application de décider du comportement (stream, redirection publique, ou redirection pré-signée).
 
 ---
 
-## Cas d’usage
+## Détection des filesystems S3
 
-- Fichiers (images, vidéos, etc.) dans un bucket S3 déjà public ou avec une politique d’accès public en lecture.
-- Souhaiter des URLs stables et sans expiration pour l’affichage ou le partage (pas de pré-signature avec date d’expiration).
-- Réduire la charge sur votre serveur en laissant le navigateur charger les fichiers directement depuis S3.
+Le bundle fournit le service **`S3FilesystemDetector`** et la configuration **`s3_filesystems`** pour indiquer quels filesystems sont S3 (ou compatibles). Votre contrôleur « servir le fichier » peut s’en servir pour appliquer une logique spécifique (ex. redirection pré-signée) sans dépendre d’un nom en dur.
 
----
+**Configuration** (`config/packages/keyboardman_filemanager.yaml`) :
 
-## Comment fournir l’URL publique S3
+```yaml
+keyboardman_filemanager:
+    s3_filesystems: ['s3']   # ou ['s3', 'cdn'] si plusieurs buckets
+```
 
-Le bundle utilise soit la route nommée `url_route` (voir [Installation – Configuration](installation.md#5-configuration-du-bundle)), soit un résolveur injecté, pour transformer une valeur `filesystem:path` (ex. `s3:uploads/photo.jpg`) en URL absolue. Cette URL est utilisée par le form picker (`value_type` = `url`), la fonction Twig `filemanager_url()`, et la route `/filemanager/resolve-url`.
+**Utilisation en PHP** :
 
-Pour exposer une **URL S3 publique** :
+```php
+use Keyboardman\FilemanagerBundle\Service\S3FilesystemDetector;
 
-1. **Configurer une route applicative** (`url_route`) qui, au lieu de streamer le fichier, renvoie une **redirection** (302) vers l’URL publique S3, ou un contrôleur qui génère cette URL et la renvoie (pour resolve-url, l’appel est en GET avec `filesystem` et `path` ; le résolveur du bundle appelle `UrlGenerator::generate(url_route, ['filesystem' => ..., 'path' => ...])`, donc votre route doit pouvoir produire l’URL finale).
-2. **Dans le contrôleur de cette route** : à partir de `filesystem` et `path`, calculez l’URL publique S3 (par exemple avec le SDK AWS : région, bucket, clé). Pour un bucket public, l’URL est souvent de la forme `https://<bucket>.s3.<region>.amazonaws.com/<path>` ou via un domaine personnalisé. Vous pouvez aussi déléguer à un service qui connaît la configuration S3 (bucket, région) et construit l’URL.
-3. **Comportement** :
-   - Si votre `url_route` pointe vers un contrôleur qui fait un `RedirectResponse` vers l’URL S3, alors `filemanager_url()` et le picker en `value_type` = `url` obtiendront cette URL (le générateur d’URL Symfony produit l’URL de la route ; si le front ou le picker suit la redirection, l’utilisateur récupère le fichier depuis S3).
-   - Si vous préférez que le résolveur retourne **directement** l’URL S3 (sans passer par une redirection), le bundle ne supporte pas nativement un callable de résolution ; en revanche, vous pouvez **remplacer ou décorer** le service `Keyboardman\FilemanagerBundle\Service\FilemanagerUrlResolver` dans votre application pour qu’il retourne l’URL S3 pour le filesystem `s3` et garde le comportement actuel (url_route) pour les autres filesystems.
+if ($this->s3Detector->isS3($filesystem)) {
+    // Redirection vers URL pré-signée ou URL publique S3
+}
+```
 
-En résumé : la **génération** de l’URL S3 (format, bucket, région) est entièrement à la charge de votre application. Le bundle se contente d’appeler la stratégie configurée (`url_route` ou le résolveur que vous fournissez).
-
----
-
-## Exemple (idée générale)
-
-- **Bucket public** : vous avez un bucket S3 avec une politique permettant la lecture publique. Vous créez une route `app_serve_file` (paramètres `filesystem`, `path`) dont le contrôleur :
-  - si `filesystem === 's3'` : construit l’URL S3 publique (ex. `https://mon-bucket.s3.eu-west-1.amazonaws.com/` + path) et renvoie un `RedirectResponse` vers cette URL (ou vous implémentez un résolveur personnalisé qui retourne cette URL pour que le picker et Twig reçoivent directement l’URL S3).
-  - sinon : sert le fichier depuis le filesystem local comme d’habitude (stream).
-- Ainsi, pour les valeurs `s3:...`, l’utilisateur obtient une URL S3 publique sans expiration, sans que le bundle n’ait à connaître AWS.
+Voir [Installation – Configuration](installation.md#6-configuration-du-bundle).
 
 ---
 
-## Rappel
+## Option A : URL pré-signée (bucket privé)
 
-- Le bundle **ne génère pas** l’URL S3 ; il utilise uniquement la configuration que vous fournissez (`url_route` ou résolveur personnalisé).
-- La mise en place du bucket public ou de la politique S3, et le format exact de l’URL, relèvent de la documentation AWS / de votre hébergeur S3.
+Le bucket reste **privé**. Votre route `url_route` (ex. `app_serve_file`) reçoit `filesystem` et `path` ; pour un filesystem déclaré dans `s3_filesystems`, le contrôleur génère une URL pré-signée (SDK AWS / S3) et renvoie une **redirection 302** vers cette URL. L’utilisateur accède au fichier sans rendre le bucket public ; l’URL expire après un délai (ex. 1 heure).
+
+- **Avantage** : pas de politique publique sur le bucket.
+- **Inconvénient** : l’URL stockée (celle de votre route) est stable, mais chaque ouverture déclenche une redirection vers une URL temporaire.
+
+---
+
+## Option B : URL publique sans expiration (bucket public)
+
+Vous souhaitez des **URLs stables et sans expiration** : le bucket (ou une politique) autorise la lecture publique. Votre route `url_route` peut alors rediriger vers l’URL publique S3 (ex. `https://<bucket>.s3.<region>.amazonaws.com/<key>`) au lieu de streamer le fichier ou d’utiliser une pré-signature.
+
+- **Avantage** : URLs stables, pas d’expiration, charge servie par S3.
+- **Inconvénient** : le bucket (ou les objets) doit être lisible publiquement ; à réserver aux contenus non sensibles.
+
+La **génération** de l’URL S3 (format, bucket, région, domaine personnalisé) est entièrement à la charge de votre application. Le bundle se contente d’appeler la stratégie configurée (`url_route`).
+
+---
+
+## Résumé
+
+| Besoin | Approche |
+|--------|----------|
+| Bucket privé, accès temporaire | Route `url_route` → contrôleur qui redirige vers une URL pré-signée (voir démo). |
+| Bucket public, URL stable | Route `url_route` → contrôleur qui redirige vers l’URL publique S3 (ou résolveur personnalisé qui retourne cette URL). |
+| Détecter les filesystems S3 | Configurer `s3_filesystems` et utiliser le service `S3FilesystemDetector`. |
+
+Le bundle **ne génère pas** l’URL S3 ; il utilise uniquement la configuration que vous fournissez. La mise en place du bucket public ou de la politique S3 relève de la documentation AWS / de votre hébergeur.
 
 ---
 
 ## Voir aussi
 
-- [Installation et configuration](installation.md) — `url_route`, `available_filesystems`
-- [Widget formulaire (picker)](form-picker.md) — `value_type` = `url`, `resolve_url_route`
+- [Installation et configuration](installation.md) — `url_route`, `s3_filesystems`
+- [Widget formulaire (picker)](form-picker.md) — `value_type` = `url`
 - [Sécurisation de l’API](security.md)

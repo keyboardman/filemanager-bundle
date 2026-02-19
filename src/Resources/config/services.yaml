@@ -16,6 +16,10 @@ services:
             $resolver: '@Keyboardman\FilemanagerBundle\Service\FilemanagerUrlResolver'
         tags: ['controller.service_arguments']
 
+    Keyboardman\FilemanagerBundle\Service\S3FilesystemDetector:
+        arguments:
+            $s3FilesystemNames: '%keyboardman_filemanager.s3_filesystems%'
+
     Keyboardman\FilemanagerBundle\Twig\FilemanagerUrlTwigExtension:
         arguments:
             $resolver: '@Keyboardman\FilemanagerBundle\Service\FilemanagerUrlResolver'

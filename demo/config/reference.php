@@ -1523,6 +1523,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * @psalm-type KeyboardmanFilemanagerConfig = array{
  *     url_route?: scalar|Param|null, // Route name to generate file URL (params: filesystem, path). If null, URL resolution is disabled. // Default: null
  *     available_filesystems?: list<scalar|Param|null>,
+ *     s3_filesystems?: list<scalar|Param|null>,
  * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,

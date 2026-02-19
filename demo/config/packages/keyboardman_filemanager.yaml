@@ -1,3 +1,5 @@
 keyboardman_filemanager:
     url_route: demo_serve_file
-    available_filesystems: ['default','s3']
+    available_filesystems: ['default', 's3']
+    # Filesystems déclarés comme S3 (ou compatibles) : la démo redirige vers une URL pré-signée pour ceux-ci
+    s3_filesystems: ['s3']

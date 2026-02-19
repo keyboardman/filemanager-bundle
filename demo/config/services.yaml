@@ -51,7 +51,8 @@ services:
         - '%env(MINIO_BUCKET)%'
         - ''
 
-    App\Controller\DemoResolveUrlController:
+
+    App\Controller\DemoServeFileController:
         arguments:
             $s3Client: '@app.s3_client'
             $minioBucket: '%env(MINIO_BUCKET)%'
